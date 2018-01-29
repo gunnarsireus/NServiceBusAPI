@@ -1,110 +1,76 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
 using Shared.Models;
 
 namespace Client.DAL
 {
 
-	public class CarDataAccess:ICarDataAccess
+	public class CarDataAccess : ICarDataAccess
 	{
-		readonly DbContextOptionsBuilder<CarApiContext> _optionsBuilder =
-            new DbContextOptionsBuilder<CarApiContext>();
+		readonly CarApiContext _carApiContext;
 
-		DbContextOptionsBuilder<CarApiContext> OptionsBuilder => _optionsBuilder;
+		public CarDataAccess(CarApiContext carApiContext)
+		{
+			_carApiContext = carApiContext;
+		}
 
-		public CarDataAccess()
-        {
-            _optionsBuilder.UseSqlite("DataSource=App_Data/Car.db");
-        }
+		public ICollection<Car> GetCars()
+		{
+			return _carApiContext.Cars.ToList();
+		}
 
-	    public ICollection<Car> GetCars()
-	    {
-		    using (var context = new CarApiContext(OptionsBuilder.Options))
-		    {
-			    return context.Cars.ToList();
-		    }
-	    }
+		public Car GetCar(Guid id)
+		{
+			return _carApiContext.Cars.SingleOrDefault(o => o.Id == id);
+		}
 
-	    public Car GetCar(Guid id)
-	    {
-		    using (var context = new CarApiContext(OptionsBuilder.Options))
-		    {
-			    return context.Cars.SingleOrDefault(o => o.Id == id);
-		    }
-	    }
+		public void AddCar(Car car)
+		{
+			_carApiContext.Cars.Add(car);
+			_carApiContext.SaveChanges();
+		}
 
-	    public void AddCar(Car car)
-	    {
-		    using (var context = new CarApiContext(OptionsBuilder.Options))
-		    {
-			    context.Cars.Add(car);
-			    context.SaveChanges();
-		    }
-	    }
-
-	    public void DeleteCar(Guid id)
-	    {
-		    using (var context = new CarApiContext(OptionsBuilder.Options))
-		    {
-			    var Car = GetCar(id);
-			    context.Cars.Remove(Car);
-			    context.SaveChanges();
-		    }
-	    }
+		public void DeleteCar(Guid id)
+		{
+			var Car = GetCar(id);
+			_carApiContext.Cars.Remove(Car);
+			_carApiContext.SaveChanges();
+		}
 
 		public void UpdateCar(Car car)
 		{
-			using (var context = new CarApiContext(OptionsBuilder.Options))
-			{
-				context.Cars.Update(car);
-				context.SaveChanges();
-			}
+			_carApiContext.Cars.Update(car);
+			_carApiContext.SaveChanges();
 		}
 
 		public ICollection<Company> GetCompanies()
-        {
-            using (var context = new CarApiContext(OptionsBuilder.Options))
-            {
-                return context.Companies.ToList();
-            }
-        }
+		{
+			return _carApiContext.Companies.ToList();
+		}
 
-        public Company GetCompany(Guid id)
-        {
-            using (var context = new CarApiContext(OptionsBuilder.Options))
-            {
-                return context.Companies.SingleOrDefault(o => o.Id == id);
-            }
-        }
+		public Company GetCompany(Guid id)
+		{
+			return _carApiContext.Companies.SingleOrDefault(o => o.Id == id);
+		}
 
-        public void AddCompany(Company company)
-        {
-            using (var context = new CarApiContext(OptionsBuilder.Options))
-            {
-                context.Companies.Add(company);
-                context.SaveChanges();
-            }
-        }
+		public void AddCompany(Company company)
+		{
+			_carApiContext.Companies.Add(company);
+			_carApiContext.SaveChanges();
+		}
 
-        public void DeleteCompany(Guid id)
-        {
-            using (var context = new CarApiContext(OptionsBuilder.Options))
-            {
-                var company = GetCompany(id);
-                context.Companies.Remove(company);
-                context.SaveChanges();
-            }
-        }
+		public void DeleteCompany(Guid id)
+		{
+			var company = GetCompany(id);
+			_carApiContext.Companies.Remove(company);
+			_carApiContext.SaveChanges();
+		}
 
 		public void UpdateCompany(Company company)
 		{
-			using (var context = new CarApiContext(OptionsBuilder.Options))
-			{
-				context.Companies.Update(company);
-				context.SaveChanges();
-			}
+			_carApiContext.Companies.Update(company);
+			_carApiContext.SaveChanges();
 		}
 	}
 }

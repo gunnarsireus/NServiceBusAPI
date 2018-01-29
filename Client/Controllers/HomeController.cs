@@ -18,10 +18,10 @@ namespace Client.Controllers
 		readonly IEndpointInstance _endpointInstance;
         readonly CarDataAccess _dataAccess;
 
-        public HomeController(IEndpointInstance endPointEndpointInstance)
+        public HomeController(IEndpointInstance endPointEndpointInstance, CarApiContext carApiContext)
 		{
 			_endpointInstance = endPointEndpointInstance;
-            _dataAccess = new CarDataAccess();
+            _dataAccess = new CarDataAccess(carApiContext);
         }
 
 		public async Task<IActionResult> Index()
@@ -33,7 +33,7 @@ namespace Client.Controllers
 			}
 			catch (Exception e)
 			{
-				TempData["CustomError"] = "Ingen kontakt med servern! CarAPI måste startas innan Client kan köras!";
+				TempData["CustomError"] = "No contakt with server!";
 				return View("Index", new HomeViewModel(Guid.NewGuid()) { Companies = new List<Company>() });
 			}
 

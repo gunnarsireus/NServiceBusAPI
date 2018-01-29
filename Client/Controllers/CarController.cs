@@ -22,11 +22,11 @@ namespace Client.Controllers
         readonly IEndpointInstance _endpointInstance;
         readonly CarDataAccess _dataAccess;
 
-        public CarController(SignInManager<ApplicationUser> signInManager, IEndpointInstance endpointInstance)
+        public CarController(SignInManager<ApplicationUser> signInManager, IEndpointInstance endpointInstance, CarApiContext carApiContext)
         {
             _signInManager = signInManager;
             _endpointInstance = endpointInstance;
-            _dataAccess = new CarDataAccess();
+            _dataAccess = new CarDataAccess(carApiContext);
 
         }
 
