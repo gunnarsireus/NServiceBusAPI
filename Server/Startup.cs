@@ -14,14 +14,13 @@ using Shared.Response;
 
 namespace Server
 {
-
-
 	public class Startup
 	{
 		public Startup(IHostingEnvironment env)
 		{
 			var builder = new ConfigurationBuilder()
 				.SetBasePath(env.ContentRootPath)
+				.AddJsonFile("appsettings.json")
 				.AddEnvironmentVariables();
 			Configuration = builder.Build();
 		}
@@ -29,11 +28,20 @@ namespace Server
 		IContainer ApplicationContainer { get; set; }
 		IConfigurationRoot Configuration { get; set; }
 
+		//private readonly IOptions<AppSettings> _appSettings;
+
 		// This method gets called by the runtime. Use this method to add services to the container.
+
 		public IServiceProvider ConfigureServices(IServiceCollection services)
 		{
 			var dbContextOptionsBuilder = new DbContextOptionsBuilder<CarApiContext>();
-			dbContextOptionsBuilder.UseSqlite("DataSource=App_Data/Car.db");
+			dbContextOptionsBuilder.UseSqlite("DataSource=" + Configuration["AppSettings:DbLocation"] + "/Car.db");
+
+			using (var context = new CarApiContext(dbContextOptionsBuilder.Options))
+			{
+				context.Database.EnsureCreated();
+				context.EnsureSeedData();
+			}
 
 			var builder = new ContainerBuilder();
 			builder.Populate(services);

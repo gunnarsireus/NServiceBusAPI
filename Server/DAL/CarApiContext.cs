@@ -5,7 +5,7 @@ namespace Server.DAL
 {
 	public class CarApiContext : DbContext
 	{
-		public CarApiContext(DbContextOptions options)
+		public CarApiContext(DbContextOptions<CarApiContext> options)
 			: base(options)
 		{
 		}

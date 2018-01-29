@@ -64,10 +64,12 @@ namespace Client
             }
             if (location != null)
             {
-                services.AddDbContext<ApplicationDbContext>(options =>
-                    options.UseSqlite("Data Source=" + location + "\\AspNet.db"));
-                services.AddDbContext<CarApiContext>(options =>
-                        options.UseSqlite("Data Source=" + location + "\\Car.db"));
+	            var location1 = location.Replace(@"\", "/");
+	            services.AddDbContext<CarApiContext>(options =>
+		            options.UseSqlite("Data Source=" + location1 +  "/Car.db"));
+
+	            services.AddDbContext<ApplicationDbContext>(options =>
+                    options.UseSqlite("Data Source=" + location1 + "/AspNet.db"));
             }
             else
             {
