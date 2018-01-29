@@ -59,7 +59,7 @@ namespace Server
 			var endpointConfiguration = new EndpointConfiguration("NServiceBusCore.Server");
 			endpointConfiguration.EnableCallbacks(makesRequests: false);
 			endpointConfiguration.UsePersistence<LearningPersistence>();
-			endpointConfiguration.UseTransport<LearningTransport>().Routing().RouteToEndpoint(assembly:typeof(UpdateCarResponse).Assembly, destination: "NServiceBusCore.Client");
+			endpointConfiguration.UseTransport<LearningTransport>().Routing().RouteToEndpoint(assembly:typeof(GetCarResponse).Assembly, destination: "NServiceBusCore.Client");
 			endpointConfiguration.UseContainer<AutofacBuilder>(
 				customizations: customizations =>
 				{

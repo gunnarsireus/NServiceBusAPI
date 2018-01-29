@@ -2,11 +2,9 @@ using Shared.Requests;
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.Logging;
-using Shared.Response;
 using Server.Data;
 using Server.DAL;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace Server.Requesthandler
 {
@@ -28,11 +26,7 @@ namespace Server.Requesthandler
 				unitOfWork.Cars.Remove(unitOfWork.Cars.Get(message.CarId));
 				unitOfWork.Complete();
 			}
-			//var response = new DeleteCarResponse()
-			//{
-			//	DataId = Guid.NewGuid()
-			//};
-			//var reply = context.Reply(response);
+
 			return Task.CompletedTask;
 		}
 	}

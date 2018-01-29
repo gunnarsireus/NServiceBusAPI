@@ -2,7 +2,6 @@ using Shared.Requests;
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.Logging;
-using Shared.Response;
 using Server.DAL;
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
@@ -29,11 +28,6 @@ namespace Server.Requesthandler
 				unitOfWork.Complete();
 			}
 
-			//var response = new UpdateCarResponse
-			//{
-			//	Car = message.Car
-			//};
-			//var reply = context.Reply(response);
 			return Task.CompletedTask;
 		}
 	}

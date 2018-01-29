@@ -2,8 +2,6 @@ using NServiceBus;
 using System.Threading.Tasks;
 using NServiceBus.Logging;
 using Shared.Requests;
-using System;
-using Shared.Response;
 using Server.DAL;
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
@@ -27,13 +25,7 @@ namespace Server.Requesthandler
 				unitOfWork.Companies.Update(message.Company);
 				unitOfWork.Complete();
 			}
-			//var response = new UpdateCompanyResponse()
-			//{
-			//	DataId = Guid.NewGuid(),
-			//	Company = message.Company
-			//};
 
-			//var reply = context.Reply(response);
 			return Task.CompletedTask;
 
 		}

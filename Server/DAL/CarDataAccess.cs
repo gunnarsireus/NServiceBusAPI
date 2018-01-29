@@ -1,110 +1,78 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
 using Shared.Models;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
-namespace Server.DAL
+namespace Client.DAL
 {
+	using Server.DAL;
 
-	public class CarDataAccess:ICarDataAccess
+	public class CarDataAccess
 	{
-		readonly DbContextOptionsBuilder<CarApiContext> _optionsBuilder =
-            new DbContextOptionsBuilder<CarApiContext>();
+		readonly CarApiContext _carApiContext;
 
-		DbContextOptionsBuilder<CarApiContext> OptionsBuilder => _optionsBuilder;
-
-		public CarDataAccess()
-        {
-            _optionsBuilder.UseSqlite("DataSource=App_Data/Car.db");
-        }
-
-	    public ICollection<Car> GetCars()
-	    {
-		    using (var context = new CarApiContext(OptionsBuilder.Options))
-		    {
-			    return context.Cars.ToList();
-		    }
-	    }
-
-	    public Car GetCar(Guid id)
-	    {
-		    using (var context = new CarApiContext(OptionsBuilder.Options))
-		    {
-			    return context.Cars.SingleOrDefault(o => o.Id == id);
-		    }
-	    }
-
-	    public void AddCar(Car car)
-	    {
-		    using (var context = new CarApiContext(OptionsBuilder.Options))
-		    {
-			    context.Cars.Add(car);
-			    context.SaveChanges();
-		    }
-	    }
-
-	    public void DeleteCar(Guid id)
-	    {
-		    using (var context = new CarApiContext(OptionsBuilder.Options))
-		    {
-			    var Car = GetCar(id);
-			    context.Cars.Remove(Car);
-			    context.SaveChanges();
-		    }
-	    }
-
-		public void UpdateCar(Car car)
+		public CarDataAccess(CarApiContext carApiContext)
 		{
-			using (var context = new CarApiContext(OptionsBuilder.Options))
-			{
-				context.Cars.Update(car);
-				context.SaveChanges();
-			}
+			_carApiContext = carApiContext;
 		}
 
-		public ICollection<Company> GetCompanies()
-        {
-            using (var context = new CarApiContext(OptionsBuilder.Options))
-            {
-                return context.Companies.ToList();
-            }
-        }
-
-        public Company GetCompany(Guid id)
-        {
-            using (var context = new CarApiContext(OptionsBuilder.Options))
-            {
-                return context.Companies.SingleOrDefault(o => o.Id == id);
-            }
-        }
-
-        public void AddCompany(Company company)
-        {
-            using (var context = new CarApiContext(OptionsBuilder.Options))
-            {
-                context.Companies.Add(company);
-                context.SaveChanges();
-            }
-        }
-
-        public void DeleteCompany(Guid id)
-        {
-            using (var context = new CarApiContext(OptionsBuilder.Options))
-            {
-                var company = GetCompany(id);
-                context.Companies.Remove(company);
-                context.SaveChanges();
-            }
-        }
-
-		public void UpdateCompany(Company company)
+		public async Task<List<Car>> GetCars()
 		{
-			using (var context = new CarApiContext(OptionsBuilder.Options))
-			{
-				context.Companies.Update(company);
-				context.SaveChanges();
-			}
+			return await _carApiContext.Cars.ToListAsync();
+		}
+
+		public async Task<Car> GetCar(Guid id)
+		{
+			return await _carApiContext.Cars.SingleOrDefaultAsync(o => o.Id == id);
+		}
+
+		public async Task AddCar(Car car)
+		{
+			_carApiContext.Cars.Add(car);
+			await _carApiContext.SaveChangesAsync();
+		}
+
+		public async Task DeleteCar(Guid id)
+		{
+			var car = await GetCar(id);
+			_carApiContext.Cars.Remove(car);
+			await _carApiContext.SaveChangesAsync();
+		}
+
+		public async Task UpdateCar(Car car)
+		{
+		    _carApiContext.Cars.Update(car);
+			await _carApiContext.SaveChangesAsync();
+		}
+
+		public async Task<List<Company>> GetCompanies()
+		{
+			return await _carApiContext.Companies.ToListAsync();
+		}
+
+		public async Task<Company> GetCompany(Guid id)
+		{
+			return await _carApiContext.Companies.SingleOrDefaultAsync(o => o.Id == id);
+		}
+
+		public async Task AddCompany(Company company)
+		{
+			_carApiContext.Companies.Add(company);
+			await _carApiContext.SaveChangesAsync();
+		}
+
+		public async Task DeleteCompany(Guid id)
+		{
+			var company = await GetCompany(id);
+			_carApiContext.Companies.Remove(company);
+			await _carApiContext.SaveChangesAsync();
+		}
+
+		public async Task UpdateCompany(Company company)
+		{
+			_carApiContext.Companies.Update(company);
+			await _carApiContext.SaveChangesAsync();
 		}
 	}
 }

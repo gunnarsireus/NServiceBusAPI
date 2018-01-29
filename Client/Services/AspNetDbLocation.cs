@@ -6,15 +6,15 @@ using Shared.Response;
 namespace Client.Services
 {
 	// This class is used by the application to get the location of the AspNet.db used for authntication of users.
-	public class dBlocations : IAspNetDbLocation
+	public class dBlocations
     {
-	    public async Task<GetDbLocationsResponse> GetDbLocationsAsync(IEndpointInstance endpointInstance)
+	    public async Task<GetDbLocationResponse> GetDbLocationAsync(IEndpointInstance endpointInstance)
 	    {
-		    var message = new GetDbLocationsRequest();
+		    var message = new GetDbLocationRequest();
 		    var sendOptions = new SendOptions();
 		    sendOptions.SetDestination("NServiceBusCore.Server");
 		    var responseTask = await endpointInstance
-			    .Request<GetDbLocationsResponse>(message, sendOptions);
+			    .Request<GetDbLocationResponse>(message, sendOptions);
 		    return responseTask;
 		}
 	}

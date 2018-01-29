@@ -2,7 +2,6 @@ using Shared.Requests;
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.Logging;
-using Shared.Response;
 using Server.DAL;
 using Server.Data;
 using Microsoft.EntityFrameworkCore;
@@ -23,18 +22,12 @@ namespace Server.Requesthandler
 		{
 			log.Info("Received CreateCarRequest.");
 
-			//var response = new CreateCarResponse()
-			//{
-			//	Car = message.Car
-			//};
-
 			using (var unitOfWork = new CarUnitOfWork(new CarApiContext(_dbContextOptionsBuilder.Options)))
 			{
 				unitOfWork.Cars.Add(message.Car);
 				unitOfWork.Complete();
 			}
 
-			//var reply = context.Reply(response);
 			return Task.CompletedTask;
 		}
 	}

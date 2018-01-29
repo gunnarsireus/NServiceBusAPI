@@ -6,7 +6,13 @@
 
   <ItemGroup>
     <Compile Remove="Requests\SetCarOnlineOfflineRequest.cs" />
+    <Compile Remove="Response\CreateCarResponse.cs" />
+    <Compile Remove="Response\CreateCompayResponse.cs" />
+    <Compile Remove="Response\DeleteCarResponse.cs" />
+    <Compile Remove="Response\DeleteCompayResponse.cs" />
     <Compile Remove="Response\SetCarOnlineOfflineResponse.cs" />
+    <Compile Remove="Response\UpdateCarResponse.cs" />
+    <Compile Remove="Response\UpdateCompayResponse.cs" />
   </ItemGroup>
 
   <ItemGroup>

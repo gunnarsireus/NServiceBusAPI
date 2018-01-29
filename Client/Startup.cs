@@ -37,7 +37,6 @@ namespace Client
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddEntityFrameworkStores<CarApiContext>()
                 .AddDefaultTokenProviders();
 
             //// Add application services.
@@ -56,7 +55,7 @@ namespace Client
             var dBlocations = new dBlocations();
             try
             {
-                var dBlocation = await dBlocations.GetDbLocationsAsync(EndpointInstance);
+                var dBlocation = await dBlocations.GetDbLocationAsync(EndpointInstance);
                 location = dBlocation.DbLocation;
             }
             catch (Exception e)

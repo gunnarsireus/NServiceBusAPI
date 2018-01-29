@@ -9,7 +9,6 @@ namespace Client.DAL
 	public class CarDataAccess
 	{
 		readonly CarApiContext _carApiContext;
-
 		public CarDataAccess(CarApiContext carApiContext)
 		{
 			_carApiContext = carApiContext;
