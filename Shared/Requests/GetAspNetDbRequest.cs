@@ -4,9 +4,9 @@ using NServiceBus;
 namespace Shared.Requests
 {
 	[Serializable]
-	public class GetAspNetDbRequest : IMessage
+	public class GetDbLocationsRequest : IMessage
 	{
-		public GetAspNetDbRequest()
+		public GetDbLocationsRequest()
 		{
 			DataId = Guid.NewGuid();
 		}

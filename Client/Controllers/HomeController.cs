@@ -8,24 +8,28 @@ using Client.Models.HomeViewModel;
 using Client.Models;
 using NServiceBus;
 using Shared.Models;
+using Client.DAL;
+using Shared.Requests;
 
 namespace Client.Controllers
 {
 	public class HomeController : Controller
 	{
 		readonly IEndpointInstance _endpointInstance;
-		public HomeController(IEndpointInstance endPointEndpointInstance)
+        readonly ICarDataAccess _dataAccess;
+
+        public HomeController(IEndpointInstance endPointEndpointInstance, ICarDataAccess carDataAccess)
 		{
 			_endpointInstance = endPointEndpointInstance;
-		}
+            _dataAccess = carDataAccess;
+        }
 
 		public async Task<IActionResult> Index()
 		{
 			List<Company> companies;
 			try
 			{
-				var responseTask = await Utils.Utils.GetCompaniesResponseAsync(_endpointInstance);
-				companies = responseTask.Companies;
+				companies = _dataAccess.GetCompanies().ToList();
 			}
 			catch (Exception e)
 			{
@@ -33,13 +37,13 @@ namespace Client.Controllers
 				return View("Index", new HomeViewModel(Guid.NewGuid()) { Companies = new List<Company>() });
 			}
 
-			var getCarsResponse = await Utils.Utils.GetCarsResponseAsync(_endpointInstance);
-			var allCars = getCarsResponse.Cars.ToList();
+			var allCars = _dataAccess.GetCars().ToList();
 			foreach (var car in allCars)
 			{
 				car.Disabled = false; //Enable updates of Online/Offline
-				var updateCarResponse = Utils.Utils.UpdateCarResponseAsync(car, _endpointInstance);
-			}
+                var message = new UpdateCarRequest(car);
+                await _endpointInstance.Send(message).ConfigureAwait(false);
+            }
 
 			foreach (var company in companies)
 			{

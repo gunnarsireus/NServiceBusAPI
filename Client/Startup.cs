@@ -14,88 +14,93 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Client
 {
-	public class Startup
-	{
-		IEndpointInstance EndpointInstance { get; set; }
+    public class Startup
+    {
+        IEndpointInstance EndpointInstance { get; set; }
 
-		// This method gets called by the runtime. Use this method to add services to the container.
-		public void ConfigureServices(IServiceCollection services)
-		{
-			var endpointConfiguration = new EndpointConfiguration("NServiceBusCore.Client");
-			var transport = endpointConfiguration.UseTransport<LearningTransport>();
-			endpointConfiguration.UsePersistence<LearningPersistence>();
-			endpointConfiguration.MakeInstanceUniquelyAddressable("1");
-			endpointConfiguration.EnableCallbacks();
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            var endpointConfiguration = new EndpointConfiguration("NServiceBusCore.Client");
+            var transport = endpointConfiguration.UseTransport<LearningTransport>();
+            endpointConfiguration.UsePersistence<LearningPersistence>();
+            endpointConfiguration.MakeInstanceUniquelyAddressable("1");
+            endpointConfiguration.EnableCallbacks();
 
-			EndpointInstance = Endpoint.Start(endpointConfiguration).GetAwaiter().GetResult();
+            EndpointInstance = Endpoint.Start(endpointConfiguration).GetAwaiter().GetResult();
 
-			services.AddSingleton(EndpointInstance);
+            services.AddSingleton(EndpointInstance);
 
-			services.AddIdentity<ApplicationUser, IdentityRole>()
-				.AddEntityFrameworkStores<ApplicationDbContext>()
-				.AddDefaultTokenProviders();
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddEntityFrameworkStores<CarApiContext>()
+                .AddDefaultTokenProviders();
 
-			//// Add application services.
-			services.AddTransient<IEmailSender, EmailSender>();
+            //// Add application services.
+            services.AddTransient<IEmailSender, EmailSender>();
+            services.AddTransient<ICarDataAccess, CarDataAccess>();
+            services.AddMvc();
 
-			services.AddMvc();
+            var task = ConfigureServicesAsync(services);
 
-			var task = ConfigureServicesAsync(services);
+            task.Wait();
 
-			task.Wait();
+        }
 
-		}
+        async Task ConfigureServicesAsync(IServiceCollection services)
+        {
+            string location = null;
+            var dBlocations = new dBlocations();
+            try
+            {
+                var dBlocation = await dBlocations.GetDbLocationsAsync(EndpointInstance);
+                location = dBlocation.DbLocation;
+            }
+            catch (Exception e)
+            {
+                //Do nothing
+            }
+            if (location != null)
+            {
+                services.AddDbContext<ApplicationDbContext>(options =>
+                    options.UseSqlite("Data Source=" + location + "\\AspNet.db"));
+                services.AddDbContext<CarApiContext>(options =>
+                        options.UseSqlite("Data Source=" + location + "\\Car.db"));
+            }
+            else
+            {
+                services.AddDbContext<ApplicationDbContext>(options =>
+                    options.UseSqlite("Data Source=" + Directory.GetCurrentDirectory() + "\\App_Data\\AspNet.db"));
+                services.AddDbContext<CarApiContext>(options =>
+                    options.UseSqlite("Data Source=" + Directory.GetCurrentDirectory() + "\\App_Data\\Car.db"));
+            }
+        }
 
-		async Task ConfigureServicesAsync(IServiceCollection services)
-		{
-			string aspNetDb = null;
-			var aspNetDbLocation = new AspNetDbLocation();
-			try
-			{
-				var getAspNetDb = await aspNetDbLocation.GetAspNetDbAsync(EndpointInstance);
-				aspNetDb = getAspNetDb.AspNetDb;
-			}
-			catch (Exception e)
-			{
-				//Do nothing
-			}
-			if (aspNetDb != null)
-			{
-				services.AddDbContext<ApplicationDbContext>(options =>
-					options.UseSqlite("Data Source=" + aspNetDb));
-			}
-			else
-			{
-				services.AddDbContext<ApplicationDbContext>(options =>
-					options.UseSqlite("Data Source=" + Directory.GetCurrentDirectory() + "\\App_Data\\AspNet.db"));
-			}
-		}
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        {
+            loggerFactory.AddDebug();
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseBrowserLink();
+                app.UseDatabaseErrorPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+            }
 
-		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
-		{
-			loggerFactory.AddDebug();
-			if (env.IsDevelopment())
-			{
-				app.UseDeveloperExceptionPage();
-				app.UseBrowserLink();
-				app.UseDatabaseErrorPage();
-			}
-			else
-			{
-				app.UseExceptionHandler("/Home/Error");
-			}
+            app.UseStaticFiles();
 
-			app.UseStaticFiles();
+            app.UseAuthentication();
 
-			app.UseAuthentication();
-
-			app.UseMvc(routes =>
-			{
-				routes.MapRoute(
-					"default",
-					"{controller=Home}/{action=Index}/{id?}");
-			});
-		}
-	}
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    "default",
+                    "{controller=Home}/{action=Index}/{id?}");
+            });
+        }
+    }
 }

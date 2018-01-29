@@ -4,16 +4,16 @@ using System;
 namespace Shared.Response
 {
 	[Serializable]
-	public class GetAspNetDbResponse : IMessage
+	public class GetDbLocationsResponse : IMessage
 	{
-		public GetAspNetDbResponse()
+		public GetDbLocationsResponse()
 		{
 			DataId = Guid.NewGuid();
 		}
 		public Guid DataId { get; set; }
-		public string AspNetDb { get; set; }
+		public string DbLocation { get; set; }
 
-		public static implicit operator string(GetAspNetDbResponse v)
+		public static implicit operator string(GetDbLocationsResponse v)
 		{
 			throw new NotImplementedException();
 		}

@@ -1,8 +1,7 @@
-﻿namespace Server.Data
+﻿using Server.DAL;
+
+namespace Server.Data
 {
-	using Server.DAL;
-
-
 	public class UnitOfWork:IUnitOfWork
     {
 	    readonly CarApiContext _context;

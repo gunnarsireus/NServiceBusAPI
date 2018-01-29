@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Shared.Models;
 
-namespace Server.DAL
+namespace Client.DAL
 {
 
 	public class CarDataAccess:ICarDataAccess

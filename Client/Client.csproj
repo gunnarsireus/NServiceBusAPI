@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
+    <PackageReference Include="Microsoft.Codedom.Providers.DotNetCompilerPlatform" Version="1.0.8" />
     <PackageReference Include="NServiceBus" Version="7.0.0-beta0012" />
     <PackageReference Include="NServiceBus.Callbacks" Version="3.0.0-beta0003" />
   </ItemGroup>
@@ -20,6 +21,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="App_Data\" />
   </ItemGroup>
 
 </Project>

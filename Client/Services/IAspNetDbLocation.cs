@@ -7,7 +7,7 @@ namespace Client.Services
 
 	public interface IAspNetDbLocation
 	{
-		Task<GetAspNetDbResponse> GetAspNetDbAsync(IEndpointInstance endpointInstance);
+		Task<GetDbLocationsResponse> GetDbLocationsAsync(IEndpointInstance endpointInstance);
 
 	}
 }
