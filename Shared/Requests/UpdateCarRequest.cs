@@ -5,7 +5,7 @@ using Shared.Models;
 namespace Shared.Requests
 {
 	[Serializable]
-	public class UpdateCarRequest : IMessage
+	public class UpdateCarRequest : ICommand
 	{
 		public UpdateCarRequest(Car car)
 		{

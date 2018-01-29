@@ -23,10 +23,10 @@ namespace Server.Requesthandler
 		{
 			log.Info("Received CreateCarRequest.");
 
-			var response = new CreateCarResponse()
-			{
-				Car = message.Car
-			};
+			//var response = new CreateCarResponse()
+			//{
+			//	Car = message.Car
+			//};
 
 			using (var unitOfWork = new CarUnitOfWork(new CarApiContext(_dbContextOptionsBuilder.Options)))
 			{
@@ -34,8 +34,8 @@ namespace Server.Requesthandler
 				unitOfWork.Complete();
 			}
 
-			var reply = context.Reply(response);
-			return reply;
+			//var reply = context.Reply(response);
+			return Task.CompletedTask;
 		}
 	}
 }

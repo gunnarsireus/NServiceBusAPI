@@ -29,13 +29,13 @@ namespace Server.Requesthandler
 				unitOfWork.Complete();
 			}
 
-			var response = new CreateCompanyResponse()
-			{
-				Company = message.Company
-			};
+			//var response = new CreateCompanyResponse()
+			//{
+			//	Company = message.Company
+			//};
 
-			var reply = context.Reply(response);
-			return reply;
+			//var reply = context.Reply(response);
+			return Task.CompletedTask;
 		}
 	}
 }

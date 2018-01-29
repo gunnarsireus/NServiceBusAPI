@@ -6,7 +6,7 @@ namespace Shared.Requests
 {
 
 	[Serializable]
-	public class CreateCarRequest : IMessage
+	public class CreateCarRequest : ICommand
 	{
 		public CreateCarRequest(Car car)
 		{

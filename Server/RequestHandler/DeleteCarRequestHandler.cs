@@ -28,12 +28,12 @@ namespace Server.Requesthandler
 				unitOfWork.Cars.Remove(unitOfWork.Cars.Get(message.CarId));
 				unitOfWork.Complete();
 			}
-			var response = new DeleteCarResponse()
-			{
-				DataId = Guid.NewGuid()
-			};
-			var reply = context.Reply(response);
-			return reply;
+			//var response = new DeleteCarResponse()
+			//{
+			//	DataId = Guid.NewGuid()
+			//};
+			//var reply = context.Reply(response);
+			return Task.CompletedTask;
 		}
 	}
 }

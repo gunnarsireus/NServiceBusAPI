@@ -29,12 +29,12 @@ namespace Server.Requesthandler
 				unitOfWork.Complete();
 			}
 
-			var response = new UpdateCarResponse
-			{
-				Car = message.Car
-			};
-			var reply = context.Reply(response);
-			return reply;
+			//var response = new UpdateCarResponse
+			//{
+			//	Car = message.Car
+			//};
+			//var reply = context.Reply(response);
+			return Task.CompletedTask;
 		}
 	}
 }

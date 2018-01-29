@@ -28,13 +28,13 @@ namespace Server.Requesthandler
 				unitOfWork.Companies.Remove(unitOfWork.Companies.Get(message.CompanyId));
 				unitOfWork.Complete();
 			}
-			var response = new DeleteCompanyResponse()
-			{
-				DataId = Guid.NewGuid()
-			};
+			//var response = new DeleteCompanyResponse()
+			//{
+			//	DataId = Guid.NewGuid()
+			//};
 	
-			var reply = context.Reply(response);
-			return reply;
+			//var reply = context.Reply(response);
+			return Task.CompletedTask;
 		}
 	}
 }

@@ -5,7 +5,7 @@ using Shared.Models;
 namespace Shared.Requests
 {
 	[Serializable]
-	public class UpdateCompanyRequest : IMessage
+	public class UpdateCompanyRequest : ICommand
 	{
 		public UpdateCompanyRequest(Company company)
 		{

@@ -6,7 +6,7 @@ namespace Shared.Requests
 {
 
 	[Serializable]
-	public class CreateCompanyRequest : IMessage
+	public class CreateCompanyRequest : ICommand
 	{
 		public CreateCompanyRequest(Company company)
 		{

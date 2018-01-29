@@ -10,12 +10,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
-
+using Shared.Response;
 
 namespace Server
 {
-	using Shared.Requests;
-	using Shared.Response;
+
 
 	public class Startup
 	{

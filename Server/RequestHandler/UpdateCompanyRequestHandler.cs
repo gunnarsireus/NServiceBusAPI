@@ -27,14 +27,14 @@ namespace Server.Requesthandler
 				unitOfWork.Companies.Update(message.Company);
 				unitOfWork.Complete();
 			}
-			var response = new UpdateCompanyResponse()
-			{
-				DataId = Guid.NewGuid(),
-				Company = message.Company
-			};
+			//var response = new UpdateCompanyResponse()
+			//{
+			//	DataId = Guid.NewGuid(),
+			//	Company = message.Company
+			//};
 
-			var reply = context.Reply(response);
-			return reply;
+			//var reply = context.Reply(response);
+			return Task.CompletedTask;
 
 		}
 	}

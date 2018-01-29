@@ -4,7 +4,7 @@ using NServiceBus;
 namespace Shared.Requests
 {
 	[Serializable]
-	public class DeleteCarRequest : IMessage
+	public class DeleteCarRequest : ICommand
 	{
 		public DeleteCarRequest(Guid id)
 		{
