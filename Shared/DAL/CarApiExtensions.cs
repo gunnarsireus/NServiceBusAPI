@@ -2,7 +2,7 @@
 using System.Linq;
 using Shared.Models;
 
-namespace Client.DAL
+namespace Shared.DAL
 {
 	public static class ServerExtensions
 	{

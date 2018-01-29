@@ -7,6 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="DAL\CarApiContext.cs" />
+    <Compile Remove="DAL\CarApiExtensions.cs" />
+    <Compile Remove="DAL\CarDataAccess.cs" />
     <Compile Remove="RequestHandler\SetCarOnlineOfflineRequestHandler.cs" />
   </ItemGroup>
 
@@ -22,6 +25,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="DAL\" />
   </ItemGroup>
 
 </Project>

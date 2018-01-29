@@ -4,7 +4,7 @@ using NServiceBus.Logging;
 using Shared.Requests;
 using System;
 using Shared.Response;
-using Server.DAL;
+using Shared.DAL;
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
 using Shared.Models;

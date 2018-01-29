@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Client.Models;
 
-namespace Client.DAL
+namespace Shared.DAL
 {
 	public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {

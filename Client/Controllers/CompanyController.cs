@@ -9,7 +9,7 @@ using Shared.Models;
 
 namespace CarClient.Controllers
 {
-    using Client.DAL;
+    using Shared.DAL;
     using NServiceBus;
     using Shared.Requests;
 

@@ -8,7 +8,7 @@ using Client.Models.HomeViewModel;
 using Client.Models;
 using NServiceBus;
 using Shared.Models;
-using Client.DAL;
+using Shared.DAL;
 using Shared.Requests;
 
 namespace Client.Controllers

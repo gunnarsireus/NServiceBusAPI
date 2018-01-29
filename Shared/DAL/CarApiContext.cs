@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Shared.Models;
 
-namespace Client.DAL
+namespace Shared.DAL
 {
 	public class CarApiContext : DbContext
 	{

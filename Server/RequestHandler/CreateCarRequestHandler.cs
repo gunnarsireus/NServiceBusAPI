@@ -2,7 +2,7 @@ using Shared.Requests;
 using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.Logging;
-using Server.DAL;
+using Shared.DAL;
 using Server.Data;
 using Microsoft.EntityFrameworkCore;
 

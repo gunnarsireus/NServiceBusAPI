@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using NServiceBus;
 using NServiceBus.Logging;
 using Server.Data;
-using Server.DAL;
+using Shared.DAL;
 using Microsoft.EntityFrameworkCore;
 
 namespace Server.Requesthandler

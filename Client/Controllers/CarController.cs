@@ -10,7 +10,7 @@ using NServiceBus;
 using Client.Models.CarViewModel;
 using Microsoft.AspNetCore.Cors;
 using Shared.Models;
-using Client.DAL;
+using Shared.DAL;
 using Shared.Requests;
 
 namespace Client.Controllers

@@ -4,10 +4,8 @@ using Shared.Models;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
-namespace Client.DAL
+namespace Shared.DAL
 {
-	using Server.DAL;
-
 	public class CarDataAccess
 	{
 		readonly CarApiContext _carApiContext;
