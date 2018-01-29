@@ -29,7 +29,7 @@ namespace Client.Controllers
 			List<Company> companies;
 			try
 			{
-				companies = _dataAccess.GetCompanies().ToList();
+				companies = await _dataAccess.GetCompanies();
 			}
 			catch (Exception e)
 			{
@@ -37,7 +37,7 @@ namespace Client.Controllers
 				return View("Index", new HomeViewModel(Guid.NewGuid()) { Companies = new List<Company>() });
 			}
 
-			var allCars = _dataAccess.GetCars().ToList();
+			var allCars = await _dataAccess.GetCars();
 			foreach (var car in allCars)
 			{
 				car.Disabled = false; //Enable updates of Online/Offline

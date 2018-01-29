@@ -32,11 +32,11 @@ namespace CarClient.Controllers
 		public async Task<IActionResult> Index()
 		{
 			if (!_signInManager.IsSignedIn(User)) return RedirectToAction("Index", "Home");
-			var companies = _dataAccess.GetCompanies().ToList();
+			var companies = await _dataAccess.GetCompanies();
 
 			foreach (var company in companies)
 			{
-				var cars = _dataAccess.GetCars();
+				var cars = await _dataAccess.GetCars();
 				cars = cars.Where(c => c.CompanyId == company.Id).ToList();
 				company.Cars = cars;
 			}
@@ -49,7 +49,7 @@ namespace CarClient.Controllers
 		// GET: Company/Details/5
 		public async Task<IActionResult> Details(Guid id)
 		{
-			var company = _dataAccess.GetCompany(id);
+			var company = await _dataAccess.GetCompany(id);
 
 			return View(company);
 		}
@@ -78,7 +78,7 @@ namespace CarClient.Controllers
 		// GET: Company/Edit/5
 		public async Task<IActionResult> Edit(Guid id)
 		{
-			var company = _dataAccess.GetCompany(id);
+			var company = await _dataAccess.GetCompany(id);
 			return View(company);
 		}
 
@@ -90,7 +90,7 @@ namespace CarClient.Controllers
 		public async Task<IActionResult> Edit(Guid id, [Bind("Id,CreationTime, Name, Address")] Company company)
 		{
 			if (!ModelState.IsValid) return View(company);
-			var oldCompany = _dataAccess.GetCompany(id);
+			var oldCompany = await _dataAccess.GetCompany(id);
 			oldCompany.Name = company.Name;
 			oldCompany.Address = company.Address;
             var message = new UpdateCompanyRequest(oldCompany);
@@ -102,7 +102,7 @@ namespace CarClient.Controllers
 		// GET: Company/Delete/5
 		public async Task<IActionResult> Delete(Guid id)
 		{
-			var company = _dataAccess.GetCompany(id);
+			var company = await _dataAccess.GetCompany(id);
 			return View(company);
 		}
 

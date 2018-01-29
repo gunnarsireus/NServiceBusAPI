@@ -34,14 +34,14 @@ namespace Client.Controllers
         [EnableCors("AllowAllOrigins")]
         public async Task<IActionResult> GetAllCars()
         {
-            return Json(_dataAccess.GetCars());
+            return Json(await _dataAccess.GetCars());
         }
 
         [HttpPost]
         public async Task<IActionResult> UpdateOnline([FromBody] Car car)
         {
             if (!ModelState.IsValid) return Json(new { success = false });
-            var oldCar = _dataAccess.GetCar(car.Id);
+            var oldCar = await _dataAccess.GetCar(car.Id);
             oldCar.Online = car.Online;
             var message = new UpdateCarRequest(car);
             await _endpointInstance.Send(message).ConfigureAwait(false);
@@ -52,8 +52,8 @@ namespace Client.Controllers
         public async Task<IActionResult> Index(string id)
         {
             if (!_signInManager.IsSignedIn(User)) return RedirectToAction("Index", "Home");
-            List<Car> cars = _dataAccess.GetCars().ToList();
-            List<Company> companies = _dataAccess.GetCompanies().ToList();
+            var cars = await _dataAccess.GetCars();
+            var companies = await _dataAccess.GetCompanies();
             if (companies.Any() && id == null)
                 id = companies[0].Id.ToString();
 
@@ -95,8 +95,8 @@ namespace Client.Controllers
         // GET: Car/Details/5
         public async Task<IActionResult> Details(Guid id)
         {
-            var car = _dataAccess.GetCar(id);
-            var company = _dataAccess.GetCompany(car.CompanyId);
+            var car = await _dataAccess.GetCar(id);
+            var company = await _dataAccess.GetCompany(car.CompanyId);
             ViewBag.CompanyName = company.Name;
             return View(car);
         }
@@ -106,7 +106,7 @@ namespace Client.Controllers
         {
             var companyId = new Guid(id);
             var car = new Car(companyId);
-            ViewBag.CompanyName = _dataAccess.GetCompany(companyId);
+            ViewBag.CompanyName = await _dataAccess.GetCompany(companyId);
             return View(car);
         }
 
@@ -128,11 +128,11 @@ namespace Client.Controllers
         // GET: Car/Edit/5
         public async Task<IActionResult> Edit(Guid id)
         {
-            var car = _dataAccess.GetCar(id);
+            var car = await _dataAccess.GetCar(id);
             car.Disabled = true; //Prevent updates of Online/Offline while editing
             var message = new UpdateCarRequest(car);
             await _endpointInstance.Send(message).ConfigureAwait(false);
-            var company = _dataAccess.GetCompany(car.CompanyId);
+            var company = await _dataAccess.GetCompany(car.CompanyId);
             ViewBag.CompanyName = company.Name;
             return View(car);
         }
@@ -145,7 +145,7 @@ namespace Client.Controllers
         public async Task<IActionResult> Edit(Guid id, [Bind("Id, Online")] Car car)
         {
             if (!ModelState.IsValid) return View(car);
-            var oldCar = _dataAccess.GetCar(id);
+            var oldCar = await _dataAccess.GetCar(id);
             oldCar.Online = car.Online;
             oldCar.Disabled = false; //Enable updates of Online/Offline when editing done
             var message = new UpdateCarRequest(car);
@@ -157,7 +157,7 @@ namespace Client.Controllers
         // GET: Car/Delete/5
         public async Task<IActionResult> Delete(Guid id)
         {
-            return View(_dataAccess.GetCar(id));
+            return View(await _dataAccess.GetCar(id));
         }
 
         // POST: Car/Delete/5
@@ -166,7 +166,7 @@ namespace Client.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            var car = _dataAccess.GetCar(id);
+            var car = await _dataAccess.GetCar(id);
             var message = new DeleteCarRequest(id);
             await _endpointInstance.Send(message).ConfigureAwait(false);
             return RedirectToAction("Index", new { id = car.CompanyId });
@@ -174,13 +174,13 @@ namespace Client.Controllers
 
         public async Task<bool> RegNrAvailableAsync(string regNr)
         {
-            var cars = _dataAccess.GetCars();
+            var cars = await _dataAccess.GetCars();
             return cars.All(c => c.RegNr != regNr);
         }
 
         public async Task<bool> VinAvailableAsync(string vin)
         {
-            var cars = _dataAccess.GetCars();
+            var cars = await _dataAccess.GetCars();
             return cars.All(c => c.VIN != vin);
         }
     }

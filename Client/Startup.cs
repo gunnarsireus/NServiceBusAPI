@@ -42,7 +42,6 @@ namespace Client
 
             //// Add application services.
             services.AddTransient<IEmailSender, EmailSender>();
-            services.AddTransient<ICarDataAccess, CarDataAccess>();
             services.AddMvc();
 
             var task = ConfigureServicesAsync(services);
