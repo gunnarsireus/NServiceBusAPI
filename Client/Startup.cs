@@ -14,7 +14,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Client
 {
-    public class Startup
+	using Shared.Requests;
+
+	public class Startup
     {
         IEndpointInstance EndpointInstance { get; set; }
 
@@ -24,7 +26,9 @@ namespace Client
             var endpointConfiguration = new EndpointConfiguration("NServiceBusCore.Client");
             var transport = endpointConfiguration.UseTransport<LearningTransport>();
             endpointConfiguration.UsePersistence<LearningPersistence>();
-            endpointConfiguration.MakeInstanceUniquelyAddressable("1");
+	        endpointConfiguration.UsePersistence<LearningPersistence>();
+	        endpointConfiguration.UseTransport<LearningTransport>().Routing().RouteToEndpoint(assembly: typeof(UpdateCarRequest).Assembly, destination: "NServiceBusCore.Server");
+			endpointConfiguration.MakeInstanceUniquelyAddressable("1");
             endpointConfiguration.EnableCallbacks();
 
             EndpointInstance = Endpoint.Start(endpointConfiguration).GetAwaiter().GetResult();

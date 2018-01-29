@@ -14,6 +14,9 @@ using Microsoft.Extensions.Configuration;
 
 namespace Server
 {
+	using Shared.Requests;
+	using Shared.Response;
+
 	public class Startup
 	{
 		public Startup(IHostingEnvironment env)
@@ -57,7 +60,7 @@ namespace Server
 			var endpointConfiguration = new EndpointConfiguration("NServiceBusCore.Server");
 			endpointConfiguration.EnableCallbacks(makesRequests: false);
 			endpointConfiguration.UsePersistence<LearningPersistence>();
-			endpointConfiguration.UseTransport<LearningTransport>();
+			endpointConfiguration.UseTransport<LearningTransport>().Routing().RouteToEndpoint(assembly:typeof(UpdateCarResponse).Assembly, destination: "NServiceBusCore.Client");
 			endpointConfiguration.UseContainer<AutofacBuilder>(
 				customizations: customizations =>
 				{
