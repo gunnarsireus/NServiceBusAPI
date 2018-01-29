@@ -16,12 +16,12 @@ namespace Client.Controllers
 	public class HomeController : Controller
 	{
 		readonly IEndpointInstance _endpointInstance;
-        readonly ICarDataAccess _dataAccess;
+        readonly CarDataAccess _dataAccess;
 
-        public HomeController(IEndpointInstance endPointEndpointInstance, ICarDataAccess carDataAccess)
+        public HomeController(IEndpointInstance endPointEndpointInstance)
 		{
 			_endpointInstance = endPointEndpointInstance;
-            _dataAccess = carDataAccess;
+            _dataAccess = new CarDataAccess();
         }
 
 		public async Task<IActionResult> Index()

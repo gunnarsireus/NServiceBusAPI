@@ -20,13 +20,13 @@ namespace Client.Controllers
     {
         readonly SignInManager<ApplicationUser> _signInManager;
         readonly IEndpointInstance _endpointInstance;
-        readonly ICarDataAccess _dataAccess;
+        readonly CarDataAccess _dataAccess;
 
-        public CarController(SignInManager<ApplicationUser> signInManager, IEndpointInstance endpointInstance, ICarDataAccess carDataAccess)
+        public CarController(SignInManager<ApplicationUser> signInManager, IEndpointInstance endpointInstance)
         {
             _signInManager = signInManager;
             _endpointInstance = endpointInstance;
-            _dataAccess = carDataAccess;
+            _dataAccess = new CarDataAccess();
 
         }
 
