@@ -11,10 +11,10 @@ using Client.Models.CarViewModel;
 using Microsoft.AspNetCore.Cors;
 using Shared.Models;
 using Shared.DAL;
-using Shared.Requests;
 
 namespace Client.Controllers
 {
+    using Messages.Commands;
 
     public class CarController : Controller
     {
@@ -43,8 +43,13 @@ namespace Client.Controllers
             if (!ModelState.IsValid) return Json(new { success = false });
             var oldCar = await _dataAccess.GetCar(car.Id);
             oldCar.Online = car.Online;
-            var message = new UpdateCarRequest(car);
+
+            var message = new UpdateCar();
+            // TODO: map object to massege
+
             await _endpointInstance.Send(message).ConfigureAwait(false);
+
+        // here we can get the latest data?
             return Json(new { success = true });
         }
 
@@ -106,6 +111,8 @@ namespace Client.Controllers
         {
             var companyId = new Guid(id);
             var car = new Car(companyId);
+
+            // go to an web API
             ViewBag.CompanyName = await _dataAccess.GetCompany(companyId);
             return View(car);
         }
@@ -120,7 +127,10 @@ namespace Client.Controllers
         {
             if (!ModelState.IsValid) return View(car);
             car.Id = Guid.NewGuid();
-            var message = new CreateCarRequest(car);
+
+            var message = new CreateCar();
+            // TODO: map object to massege
+
             await _endpointInstance.Send(message).ConfigureAwait(false);
             return RedirectToAction("Index", new { id = car.CompanyId });
         }
@@ -130,7 +140,9 @@ namespace Client.Controllers
         {
             var car = await _dataAccess.GetCar(id);
             car.Disabled = true; //Prevent updates of Online/Offline while editing
-            var message = new UpdateCarRequest(car);
+            var message = new UpdateCar();
+            // TODO: map object and massege
+
             await _endpointInstance.Send(message).ConfigureAwait(false);
             var company = await _dataAccess.GetCompany(car.CompanyId);
             ViewBag.CompanyName = company.Name;
@@ -145,13 +157,19 @@ namespace Client.Controllers
         public async Task<IActionResult> Edit(Guid id, [Bind("Id, Online")] Car car)
         {
             if (!ModelState.IsValid) return View(car);
-            var oldCar = await _dataAccess.GetCar(id);
-            oldCar.Online = car.Online;
-            oldCar.Disabled = false; //Enable updates of Online/Offline when editing done
-            var message = new UpdateCarRequest(car);
+            //var oldCar = await _dataAccess.GetCar(id);
+            //oldCar.Online = car.Online;
+            //oldCar.Disabled = false; //Enable updates of Online/Offline when editing done
+
+            var message = new UpdateCar
+            {
+                Online = car.Online,
+                Disabled = false //?? Enable updates of Online/Offline when editing done
+            };
+
             await _endpointInstance.Send(message).ConfigureAwait(false);
 
-            return RedirectToAction("Index", new { id = oldCar.CompanyId });
+            return RedirectToAction("Index", new { id = car.CompanyId });
         }
 
         // GET: Car/Delete/5
@@ -166,10 +184,13 @@ namespace Client.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            var car = await _dataAccess.GetCar(id);
-            var message = new DeleteCarRequest(id);
+            var message = new DeleteCar(){CarId = id};
+            // TODO: pass in the company id from the ui
+            var companyId = Guid.NewGuid();
+
             await _endpointInstance.Send(message).ConfigureAwait(false);
-            return RedirectToAction("Index", new { id = car.CompanyId });
+
+            return RedirectToAction("Index", new { id = companyId });
         }
 
         public async Task<bool> RegNrAvailableAsync(string regNr)

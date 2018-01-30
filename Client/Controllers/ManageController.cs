@@ -1,21 +1,20 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Client.Services;
-using Client.Models;
-using Client.Models.ManageViewModels;
-
-namespace CarClient.Controllers
+﻿namespace CarClient.Controllers
 {
+    using System;
+    using System.Linq;
+    using System.Text;
+    using System.Text.Encodings.Web;
+    using System.Threading.Tasks;
+    using Client.Models;
+    using Client.Models.ManageViewModels;
+    using Client.Services;
+    using Microsoft.AspNetCore.Authentication;
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Identity;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Logging;
 
-	[Authorize]
+    [Authorize]
     [Route("[controller]/[action]")]
     public class ManageController : Controller
     {

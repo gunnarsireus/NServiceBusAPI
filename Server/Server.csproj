@@ -7,10 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="DAL\CarApiContext.cs" />
-    <Compile Remove="DAL\CarApiExtensions.cs" />
-    <Compile Remove="DAL\CarDataAccess.cs" />
-    <Compile Remove="RequestHandler\SetCarOnlineOfflineRequestHandler.cs" />
+    <Compile Remove="DAL\**" />
+    <EmbeddedResource Remove="DAL\**" />
+    <None Remove="DAL\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="CommandHandlers\SetCarOnlineOfflineRequestHandler.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,11 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Messages\Messages.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="DAL\" />
   </ItemGroup>
 
 </Project>

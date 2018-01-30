@@ -1,22 +1,19 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using NServiceBus;
-using Shared.DAL;
-using Client.Services;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
-using Client.Models;
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-
 namespace Client
 {
-	using Shared.Requests;
+    using System.IO;
+    using Client.Models;
+    using Client.Services;
+    using Messages.Commands;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Identity;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Logging;
+    using NServiceBus;
+    using Shared.DAL;
 
-	public class Startup
+    public class Startup
     {
         IEndpointInstance EndpointInstance { get; set; }
 
@@ -27,9 +24,16 @@ namespace Client
             var transport = endpointConfiguration.UseTransport<LearningTransport>();
             endpointConfiguration.UsePersistence<LearningPersistence>();
 	        endpointConfiguration.UsePersistence<LearningPersistence>();
-	        endpointConfiguration.UseTransport<LearningTransport>().Routing().RouteToEndpoint(assembly: typeof(UpdateCarRequest).Assembly, destination: "NServiceBusCore.Server");
-			endpointConfiguration.MakeInstanceUniquelyAddressable("1");
-            endpointConfiguration.EnableCallbacks();
+
+            endpointConfiguration.UseTransport<LearningTransport>()
+                .Routing().RouteToEndpoint(assembly: typeof(CreateCar).Assembly, destination: "NServiceBusCore.Server");
+
+			endpointConfiguration.Conventions().DefiningCommandsAs(t =>
+                    t.Namespace != null && t.Namespace.StartsWith("Messages") &&
+                    (t.Namespace.EndsWith("Commands")))
+                .DefiningEventsAs(t =>
+                    t.Namespace != null && t.Namespace.StartsWith("Messages") &&
+                    t.Namespace.EndsWith("Events"));
 
             EndpointInstance = Endpoint.Start(endpointConfiguration).GetAwaiter().GetResult();
 
@@ -43,43 +47,15 @@ namespace Client
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddMvc();
 
-            var task = ConfigureServicesAsync(services);
+           // var dblocation = Directory.GetCurrentDirectory() + @"\Server\AppData";
 
-            task.Wait();
+            var dblocation = Directory.GetParent(Directory.GetCurrentDirectory()) + @"\Server\App_Data";
 
+            services.AddDbContext<CarApiContext>(options => options.UseSqlite("Data Source=" + dblocation + "/Car.db"));
+
+            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite("Data Source=" + dblocation + "/AspNet.db"));
         }
-
-        async Task ConfigureServicesAsync(IServiceCollection services)
-        {
-            string location = null;
-            var dBlocations = new dBlocations();
-            try
-            {
-                var dBlocation = await dBlocations.GetDbLocationAsync(EndpointInstance);
-                location = dBlocation.DbLocation;
-            }
-            catch (Exception e)
-            {
-                //Do nothing
-            }
-            if (location != null)
-            {
-	            var location1 = location.Replace(@"\", "/");
-	            services.AddDbContext<CarApiContext>(options =>
-		            options.UseSqlite("Data Source=" + location1 +  "/Car.db"));
-
-	            services.AddDbContext<ApplicationDbContext>(options =>
-                    options.UseSqlite("Data Source=" + location1 + "/AspNet.db"));
-            }
-            else
-            {
-                services.AddDbContext<ApplicationDbContext>(options =>
-                    options.UseSqlite("Data Source=" + Directory.GetCurrentDirectory() + "\\App_Data\\AspNet.db"));
-                services.AddDbContext<CarApiContext>(options =>
-                    options.UseSqlite("Data Source=" + Directory.GetCurrentDirectory() + "\\App_Data\\Car.db"));
-            }
-        }
-
+        
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {

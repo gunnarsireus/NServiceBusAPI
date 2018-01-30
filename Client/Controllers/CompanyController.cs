@@ -1,19 +1,18 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Client.Models;
-using Client.Models.CompanyViewModel;
-using Shared.Models;
-
 namespace CarClient.Controllers
 {
-    using Shared.DAL;
+	using System;
+	using System.Linq;
+	using System.Threading.Tasks;
+	using Client.Models;
+	using Client.Models.CompanyViewModel;
+	using Messages.Commands;
+	using Microsoft.AspNetCore.Identity;
+	using Microsoft.AspNetCore.Mvc;
+	using Shared.DAL;
     using NServiceBus;
-    using Shared.Requests;
+	using Shared.Models;
 
-    public class CompanyController : Controller
+	public class CompanyController : Controller
 	{
 		readonly SignInManager<ApplicationUser> _signInManager;
 		readonly IEndpointInstance _endpointInstance;
@@ -25,10 +24,8 @@ namespace CarClient.Controllers
 			_endpointInstance = endpointInstance;
             _dataAccess = new CarDataAccess(carApiContext);
         }
-
-
+		
 		// GET: Company
-
 		public async Task<IActionResult> Index()
 		{
 			if (!_signInManager.IsSignedIn(User)) return RedirectToAction("Index", "Home");
@@ -69,8 +66,11 @@ namespace CarClient.Controllers
 		{
 			if (!ModelState.IsValid) return View(company);
 			company.Id = Guid.NewGuid();
-            var message = new CreateCompanyRequest(company);
-            await _endpointInstance.Send(message).ConfigureAwait(false);
+
+            var message = new CreateCompany();
+			// TODO: map object and massege
+
+			await _endpointInstance.Send(message).ConfigureAwait(false);
 
             return RedirectToAction(nameof(Index));
 		}
@@ -90,11 +90,15 @@ namespace CarClient.Controllers
 		public async Task<IActionResult> Edit(Guid id, [Bind("Id,CreationTime, Name, Address")] Company company)
 		{
 			if (!ModelState.IsValid) return View(company);
-			var oldCompany = await _dataAccess.GetCompany(id);
-			oldCompany.Name = company.Name;
-			oldCompany.Address = company.Address;
-            var message = new UpdateCompanyRequest(oldCompany);
-            await _endpointInstance.Send(message).ConfigureAwait(false);
+
+			var message = new UpdateCompany
+			{
+				Id = company.Id
+			};
+			// TODO: map object and massege
+			// ....
+
+			await _endpointInstance.Send(message).ConfigureAwait(false);
 
             return RedirectToAction(nameof(Index));
 		}
@@ -112,8 +116,15 @@ namespace CarClient.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> DeleteConfirmed(Guid id)
 		{
-            var message = new DeleteCompanyRequest(id);
-            await _endpointInstance.Send(message).ConfigureAwait(false);
+			var message = new DeleteCompany
+			{
+				CompanyId = id
+			};
+			// TODO: map object and massege
+			//...
+
+			await _endpointInstance.Send(message).ConfigureAwait(false);
+
             return RedirectToAction(nameof(Index));
 		}
 	}
