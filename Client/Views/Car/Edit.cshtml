@@ -1,5 +1,5 @@
-@using Client.Models
-@model Shared.Models.Car
+@using Client.Models.CarViewModel
+@model CarViewModel
 
 @{
     ViewData["Title"] = "Edit";
@@ -11,24 +11,24 @@
     <div class="col-md-4">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <input type="hidden" asp-for="CompanyId" />
+            <input type="hidden" asp-for="Car.Id" />
+            <input type="hidden" asp-for="CarCompany.CompanyId" />
             <div class="form-group">
-                <label asp-for="CreationTime" class="control-label"></label>
-                <input asp-for="CreationTime" class="form-control" disabled="disabled" />
+                <label asp-for="Car.CreationTime" class="control-label"></label>
+                <input asp-for="Car.CreationTime" class="form-control" disabled="disabled" />
             </div>
             <div class="form-group">
-                <label asp-for="VIN" class="control-label"></label>
-                <input asp-for="VIN" class="form-control" disabled="disabled"/>
+                <label asp-for="Car.VIN" class="control-label"></label>
+                <input asp-for="Car.VIN" class="form-control" disabled="disabled"/>
             </div>
             <div class="form-group">
-                <label asp-for="RegNr" class="control-label"></label>
-                <input asp-for="RegNr" class="form-control"  disabled="disabled"/>
+                <label asp-for="Car.RegNr" class="control-label"></label>
+                <input asp-for="Car.RegNr" class="form-control"  disabled="disabled"/>
             </div>
             <div class="form-group">
                 <div class="checkbox">
-                    <label asp-for="Online">
-                        <input asp-for="Online" />
+                    <label asp-for="CarOnlineStatus.Online">
+                        <input asp-for="CarOnlineStatus.Online" />
                         @Html.DisplayNameFor(m => m.OnlineOrOffline)
                     </label>
                 </div>
@@ -42,7 +42,7 @@
 
 <div>
     <p>
-        <a asp-action="Index" asp-route-id="@Model.CompanyId">Back to list</a>
+        <a asp-action="Index" asp-route-companyId="@Model.CompanyId">Back to list</a>
     </p>
 </div>
 

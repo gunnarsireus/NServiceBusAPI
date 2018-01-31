@@ -1,7 +1,7 @@
 namespace Server.CommandHandlers
 {
 	using System.Threading.Tasks;
-	using Messages.Commands;
+	using Shared.Commands;
 	using Microsoft.EntityFrameworkCore;
 	using NServiceBus;
 	using NServiceBus.Logging;

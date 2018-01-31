@@ -5,7 +5,7 @@ namespace CarClient.Controllers
 	using System.Threading.Tasks;
 	using Client.Models;
 	using Client.Models.CompanyViewModel;
-	using Messages.Commands;
+	using Shared.Commands;
 	using Microsoft.AspNetCore.Identity;
 	using Microsoft.AspNetCore.Mvc;
 	using Shared.DAL;
@@ -38,7 +38,7 @@ namespace CarClient.Controllers
 				company.Cars = cars;
 			}
 
-			var companyViewModel = new CompanyViewModel { Companies = companies };
+			var companyViewModel = new CompanyListViewModel { Companies = companies };
 
 			return View(companyViewModel);
 		}

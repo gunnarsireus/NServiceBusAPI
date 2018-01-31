@@ -25,6 +25,11 @@ namespace Shared.DAL
 			return await _carApiContext.Cars.SingleOrDefaultAsync(o => o.Id == id);
 		}
 
+		public async Task<CarCompany> GetCarCompany(Guid id)
+		{
+			return await _carApiContext.CarCompany.SingleOrDefaultAsync(o => o.Id == id);
+		}
+
 		public async Task AddCar(Car car)
 		{
 			_carApiContext.Cars.Add(car);

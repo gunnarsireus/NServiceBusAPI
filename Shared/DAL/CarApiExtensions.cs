@@ -16,51 +16,178 @@ namespace Shared.DAL
 					Name = "Charlies Gravel Transports Ltd.",
 					Address = "Concrete Road 8, 111 11 Newcastle"
 				});
-				context.Cars.Add(new Car(companyId)
+
+				var carID = Guid.NewGuid();
+				context.Cars.Add(new Car
 				{
+					Id = carID,
 					VIN = "YS2R4X20005399401",
 					RegNr = "ABC123"
 				});
-				context.Cars.Add(new Car(companyId)
+				context.CarCompany.Add(new CarCompany
 				{
+					Id = carID,
+					CompanyId = companyId
+				});
+				context.CarDisabledStatus.Add(new CarDisabledStatus
+				{
+					Id = carID,
+					Disabled = false
+				});
+				context.CarOnlineStatus.Add(new CarOnlineStatus
+				{
+					Id = carID,
+					Online = true
+				});
+
+				carID = Guid.NewGuid();
+				context.Cars.Add(new Car
+				{
+					Id = carID,
 					VIN = "VLUR4X20009093588",
 					RegNr = "DEF456"
 				});
-				context.Cars.Add(new Car(companyId)
+				context.CarCompany.Add(new CarCompany
 				{
+					Id = carID,
+					CompanyId = companyId
+				});
+				context.CarDisabledStatus.Add(new CarDisabledStatus
+				{
+					Id = carID,
+					Disabled = false
+				});
+				context.CarOnlineStatus.Add(new CarOnlineStatus
+				{
+					Id = carID,
+					Online = true
+				});
+
+				carID = Guid.NewGuid();
+				context.Cars.Add(new Car
+				{
+					Id = carID,
 					VIN = "VLUR4X20009048066",
 					RegNr = "GHI789"
 				});
+				context.CarCompany.Add(new CarCompany
+				{
+					Id = carID,
+					CompanyId = companyId
+				});
+				context.CarDisabledStatus.Add(new CarDisabledStatus
+				{
+					Id = carID,
+					Disabled = false
+				});
+				context.CarOnlineStatus.Add(new CarOnlineStatus
+				{
+					Id = carID,
+					Online = true
+				});
 
+				// new set
 				companyId = Guid.NewGuid();
 				context.Companies.Add(new Company(companyId) { Name = "Jonnies Bulk Ltd.", Address = "Balk Road 12, 222 22 London" });
-				context.Cars.Add(new Car(companyId)
+
+				carID = Guid.NewGuid();
+				context.Cars.Add(new Car
 				{
+					Id = carID,
 					VIN = "YS2R4X20005388011",
 					RegNr = "JKL012"
 				});
-				context.Cars.Add(new Car(companyId)
+				context.CarCompany.Add(new CarCompany
 				{
+					Id = carID,
+					CompanyId = companyId
+				});
+				context.CarDisabledStatus.Add(new CarDisabledStatus
+				{
+					Id = carID,
+					Disabled = false
+				});
+				context.CarOnlineStatus.Add(new CarOnlineStatus
+				{
+					Id = carID,
+					Online = true
+				});
+
+				carID = Guid.NewGuid();
+				context.Cars.Add(new Car
+				{
+					Id = carID,
 					VIN = "YS2R4X20005387949",
 					RegNr = "MNO345"
 				});
+				context.CarCompany.Add(new CarCompany
+				{
+					Id = carID,
+					CompanyId = companyId
+				});
+				context.CarDisabledStatus.Add(new CarDisabledStatus
+				{
+					Id = carID,
+					Disabled = false
+				});
+				context.CarOnlineStatus.Add(new CarOnlineStatus
+				{
+					Id = carID,
+					Online = true
+				});
+
 
 				companyId = Guid.NewGuid();
 				context.Companies.Add(new Company(companyId) { Name = "Harolds Road Transports Ltd.", Address = "Budget Avenue 1, 333 33 Birmingham" });
-				context.Cars.Add(new Car(companyId)
+				carID = Guid.NewGuid();
+				context.Cars.Add(new Car
 				{
+					Id = carID,
 					VIN = "YS2R4X20005387765",
 					RegNr = "PQR678"
 				});
-				context.Cars.Add(new Car(companyId)
+				context.CarCompany.Add(new CarCompany
 				{
+					Id = carID,
+					CompanyId = companyId
+				});
+				context.CarDisabledStatus.Add(new CarDisabledStatus
+				{
+					Id = carID,
+					Disabled = false
+				});
+				context.CarOnlineStatus.Add(new CarOnlineStatus
+				{
+					Id = carID,
+					Online = true
+				});
+
+				carID = Guid.NewGuid();
+				context.Cars.Add(new Car
+				{
+					Id = carID,
 					VIN = "YS2R4X20005387055",
 					RegNr = "STU901"
+				});
+				context.CarCompany.Add(new CarCompany
+				{
+					Id = carID,
+					CompanyId = companyId
+				});
+				context.CarDisabledStatus.Add(new CarDisabledStatus
+				{
+					Id = carID,
+					Disabled = false
+				});
+				context.CarOnlineStatus.Add(new CarOnlineStatus
+				{
+					Id = carID,
+					Online = true
 				});
 			}
 			else
 			{
-				foreach (var car in context.Cars)
+				foreach (var car in context.CarDisabledStatus)
 				{
 					car.Disabled = false;
 				}

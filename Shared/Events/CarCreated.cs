@@ -1,4 +1,4 @@
-﻿namespace Messages.Events
+﻿namespace Shared.Events
 {
     using System;
 

@@ -3,7 +3,7 @@ namespace Client
     using System.IO;
     using Client.Models;
     using Client.Services;
-    using Messages.Commands;
+    using Shared.Commands;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Identity;

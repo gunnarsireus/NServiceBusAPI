@@ -4,16 +4,18 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Client.Models.CarViewModel
 {
-	using Shared.Models;
-
-	public class CarListViewModel : Car
+	public class CarListViewModel : CarViewModel
     {
-		public CarListViewModel(Guid companyId) : base(companyId)
+	    public CarListViewModel()
+	    {
+		    
+	    }
+		public CarListViewModel(Guid companyId)
 		{
 			CompanyId = companyId;
 		}
-		new Guid CompanyId { get; set; }
+	    public Guid CompanyId { get; set; }
 		public List<SelectListItem> CompanySelectList { get; set; }
-		public List<Car> Cars { get; set; }
+		public List<CarViewModel> Cars { get; set; }
 	}
 }

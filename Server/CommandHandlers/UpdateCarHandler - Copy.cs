@@ -1,4 +1,4 @@
-namespace Server.CommandHandlers
+namespace Server.Requesthandler
 {
 	using System.Threading.Tasks;
 	using Shared.Commands;
@@ -9,30 +9,31 @@ namespace Server.CommandHandlers
 	using Shared.DAL;
 	using Shared.Models;
 
-	public class CreateCompanyHandler : IHandleMessages<CreateCompany>
+	public class UpdateCarOnlineStatusHandler : IHandleMessages<UpdateCarOnlineStatus>
 	{
 		readonly DbContextOptionsBuilder<CarApiContext> _dbContextOptionsBuilder;
-		public CreateCompanyHandler(DbContextOptionsBuilder<CarApiContext> dbContextOptionsBuilder)
+		// What does update mean?
+		public UpdateCarOnlineStatusHandler(DbContextOptionsBuilder<CarApiContext> dbContextOptionsBuilder)
 		{
 			_dbContextOptionsBuilder = dbContextOptionsBuilder;
 		}
 
-		static ILog log = LogManager.GetLogger<CreateCompany>();
+		static ILog log = LogManager.GetLogger<UpdateCarHandler>();
 
-		public Task Handle(CreateCompany message, IMessageHandlerContext context)
+		public Task Handle(UpdateCarOnlineStatus message, IMessageHandlerContext context)
 		{
-			log.Info("Received CreateCompanyRequest");
+			log.Info("Received UpdateCar.");
 
-			var company = new Company(message.Id);
+			var car = new Car(message.Id);
+			car.Online = message.Online;
 			// TODO: map object and massege
 
 			using (var unitOfWork = new CarUnitOfWork(new CarApiContext(_dbContextOptionsBuilder.Options)))
 			{
-				unitOfWork.Companies.Add(company);
+				unitOfWork.Cars.Update(car);
 				unitOfWork.Complete();
 			}
 
-			// publish an event that a company was created?
 			return Task.CompletedTask;
 		}
 	}

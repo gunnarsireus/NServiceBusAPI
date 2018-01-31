@@ -7,7 +7,7 @@
 	using System.Threading.Tasks;
 	using Client.Models;
 	using Client.Models.HomeViewModel;
-	using Messages.Commands;
+	using Shared.Commands;
 	using Microsoft.AspNetCore.Mvc;
 	using NServiceBus;
 	using Shared.DAL;

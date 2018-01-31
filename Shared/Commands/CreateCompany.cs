@@ -1,4 +1,4 @@
-namespace Messages.Commands
+namespace Shared.Commands
 {
 	using System;
 	using System.Collections.Generic;
