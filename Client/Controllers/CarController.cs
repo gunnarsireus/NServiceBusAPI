@@ -10,176 +10,199 @@ using NServiceBus;
 using Client.Models.CarViewModel;
 using Microsoft.AspNetCore.Cors;
 using Shared.Models;
+using Shared.DAL;
 
 namespace Client.Controllers
 {
+    using Messages.Commands;
 
-	public class CarController : Controller
-	{
-		readonly SignInManager<ApplicationUser> _signInManager;
-		readonly IEndpointInstance _endpointInstance;
+    public class CarController : Controller
+    {
+        readonly SignInManager<ApplicationUser> _signInManager;
+        readonly IEndpointInstance _endpointInstance;
+        readonly CarDataAccess _dataAccess;
 
-		public CarController(SignInManager<ApplicationUser> signInManager, IEndpointInstance endpointInstance)
-		{
-			_signInManager = signInManager;
-			_endpointInstance = endpointInstance;
-		}
+        public CarController(SignInManager<ApplicationUser> signInManager, IEndpointInstance endpointInstance, CarApiContext carApiContext)
+        {
+            _signInManager = signInManager;
+            _endpointInstance = endpointInstance;
+            _dataAccess = new CarDataAccess(carApiContext);
 
-		[HttpGet]
-		[EnableCors("AllowAllOrigins")]
-		public async Task<IActionResult> GetAllCars()
-		{
-			var getCarsResponse = await Utils.Utils.GetCarsResponseAsync(_endpointInstance);
-			return Json(getCarsResponse.Cars);
-		}
+        }
 
-		[HttpPost]
-		public async Task<IActionResult> UpdateOnline([FromBody] Car car)
-		{
-			if (!ModelState.IsValid) return Json(new { success = false });
-			var getCarResponse = await Utils.Utils.GetCarResponseAsync(car.Id, _endpointInstance);
-			var oldCar = getCarResponse.Car;
-			oldCar.Online = car.Online;
-			await Utils.Utils.UpdateCarResponseAsync(oldCar, _endpointInstance);
-			return Json(new { success = true });
-		}
+        [HttpGet]
+        [EnableCors("AllowAllOrigins")]
+        public async Task<IActionResult> GetAllCars()
+        {
+            return Json(await _dataAccess.GetCars());
+        }
 
-		// GET: Car
-		public async Task<IActionResult> Index(string id)
-		{
-			if (!_signInManager.IsSignedIn(User)) return RedirectToAction("Index", "Home");
-			var getCarsResponse = await Utils.Utils.GetCarsResponseAsync(_endpointInstance);
+        [HttpPost]
+        public async Task<IActionResult> UpdateOnline([FromBody] Car car)
+        {
+            if (!ModelState.IsValid) return Json(new { success = false });
+            var oldCar = await _dataAccess.GetCar(car.Id);
+            oldCar.Online = car.Online;
 
-			var getCompaniesResponse = await Utils.Utils.GetCompaniesResponseAsync(_endpointInstance);
+            var message = new UpdateCar();
+            // TODO: map object to massege
 
-			if (getCompaniesResponse.Companies.Any() && id == null)
-				id = getCompaniesResponse.Companies[0].Id.ToString();
+            await _endpointInstance.Send(message).ConfigureAwait(false);
 
-			getCarsResponse.Cars[0].CompanyId = getCompaniesResponse.Companies[0].Id;
+        // here we can get the latest data?
+            return Json(new { success = true });
+        }
 
-			var selectList = new List<SelectListItem>
-			{
-				new SelectListItem
-				{
-					Text = "Choose company",
-					Value = ""
-				}
-			};
+        // GET: Car
+        public async Task<IActionResult> Index(string id)
+        {
+            if (!_signInManager.IsSignedIn(User)) return RedirectToAction("Index", "Home");
+            var cars = await _dataAccess.GetCars();
+            var companies = await _dataAccess.GetCompanies();
+            if (companies.Any() && id == null)
+                id = companies[0].Id.ToString();
 
-			selectList.AddRange(getCompaniesResponse.Companies.Select(company => new SelectListItem
-			{
-				Text = company.Name,
-				Value = company.Id.ToString(),
-				Selected = company.Id.ToString() == id
-			}));
+            cars[0].CompanyId = companies[0].Id;
 
-			var companyId = Guid.NewGuid();
-			if (id != null)
-			{
-				companyId = new Guid(id);
-				getCarsResponse.Cars = getCarsResponse.Cars.Where(o => o.CompanyId == companyId).ToList();
-			}
+            var selectList = new List<SelectListItem>
+            {
+                new SelectListItem
+                {
+                    Text = "Choose company",
+                    Value = ""
+                }
+            };
 
-			var carListViewModel = new CarListViewModel(companyId)
-			{
-				CompanySelectList = selectList,
-				Cars = getCarsResponse.Cars
-			};
+            selectList.AddRange(companies.Select(company => new SelectListItem
+            {
+                Text = company.Name,
+                Value = company.Id.ToString(),
+                Selected = company.Id.ToString() == id
+            }));
 
-			ViewBag.CompanyId = id;
-			return View(carListViewModel);
-		}
+            var companyId = Guid.NewGuid();
+            if (id != null)
+            {
+                companyId = new Guid(id);
+                cars = cars.Where(o => o.CompanyId == companyId).ToList();
+            }
 
-		// GET: Car/Details/5
-		public async Task<IActionResult> Details(Guid id)
-		{
-			var getCarResponse = await Utils.Utils.GetCarResponseAsync(id, _endpointInstance);
-			var getCompanyResponse = await Utils.Utils.GetCompanyResponseAsync(getCarResponse.Car.CompanyId, _endpointInstance);
-			ViewBag.CompanyName = getCompanyResponse.Company.Name;
-			return View(getCarResponse.Car);
-		}
+            var carListViewModel = new CarListViewModel(companyId)
+            {
+                CompanySelectList = selectList,
+                Cars = cars
+            };
 
-		// GET: Car/Create
-		public async Task<IActionResult> Create(string id)
-		{
-			var companyId = new Guid(id);
-			var car = new Car(companyId);
-			var getCompanyResponse = await Utils.Utils.GetCompanyResponseAsync(companyId, _endpointInstance);
-			ViewBag.CompanyName = getCompanyResponse.Company.Name;
-			return View(car);
-		}
+            ViewBag.CompanyId = id;
+            return View(carListViewModel);
+        }
 
-		// POST: Car/Create
-		// To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-		// more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create(
-			[Bind("CompanyId,VIN,RegNr,Online")] Car car)
-		{
-			if (!ModelState.IsValid) return View(car);
-			car.Id = Guid.NewGuid();
-			var createCarResponse = await Utils.Utils.CreateCarResponseAsync(car, _endpointInstance);
+        // GET: Car/Details/5
+        public async Task<IActionResult> Details(Guid id)
+        {
+            var car = await _dataAccess.GetCar(id);
+            var company = await _dataAccess.GetCompany(car.CompanyId);
+            ViewBag.CompanyName = company.Name;
+            return View(car);
+        }
 
-			return RedirectToAction("Index", new { id = car.CompanyId });
-		}
+        // GET: Car/Create
+        public async Task<IActionResult> Create(string id)
+        {
+            var companyId = new Guid(id);
+            var car = new Car(companyId);
 
-		// GET: Car/Edit/5
-		public async Task<IActionResult> Edit(Guid id)
-		{
-			var getCarResponse = await Utils.Utils.GetCarResponseAsync(id, _endpointInstance);
-			getCarResponse.Car.Disabled = true; //Prevent updates of Online/Offline while editing
-			var updateCarResponse = Utils.Utils.UpdateCarResponseAsync(getCarResponse.Car, _endpointInstance);
-			var getCompanyResponse = await Utils.Utils.GetCompanyResponseAsync(getCarResponse.Car.CompanyId, _endpointInstance);
-			ViewBag.CompanyName = getCompanyResponse.Company.Name;
-			return View(getCarResponse.Car);
-		}
+            // go to an web API
+            ViewBag.CompanyName = await _dataAccess.GetCompany(companyId);
+            return View(car);
+        }
 
-		// POST: Car/Edit/5
-		// To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-		// more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Edit(Guid id, [Bind("Id, Online")] Car car)
-		{
-			if (!ModelState.IsValid) return View(car);
-			var oldCarResponse = await Utils.Utils.GetCarResponseAsync(id, _endpointInstance);
-			var oldCar = oldCarResponse.Car;
-			oldCar.Online = car.Online;
-			oldCar.Disabled = false; //Enable updates of Online/Offline when editing done
-			var updateCarResponse = Utils.Utils.UpdateCarResponseAsync(oldCar, _endpointInstance);
+        // POST: Car/Create
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(
+            [Bind("CompanyId,VIN,RegNr,Online")] Car car)
+        {
+            if (!ModelState.IsValid) return View(car);
+            car.Id = Guid.NewGuid();
 
-			return RedirectToAction("Index", new { id = oldCar.CompanyId });
-		}
+            var message = new CreateCar();
+            // TODO: map object to massege
 
-		// GET: Car/Delete/5
-		public async Task<IActionResult> Delete(Guid id)
-		{
-			var getCarResponse = await Utils.Utils.GetCarResponseAsync(id, _endpointInstance);
-			return View(getCarResponse.Car);
-		}
+            await _endpointInstance.Send(message).ConfigureAwait(false);
+            return RedirectToAction("Index", new { id = car.CompanyId });
+        }
 
-		// POST: Car/Delete/5
-		[HttpPost]
-		[ActionName("Delete")]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> DeleteConfirmed(Guid id)
-		{
-			var getCarResponse = await Utils.Utils.GetCarResponseAsync(id, _endpointInstance);
-			await Utils.Utils.DeleteCarResponseAsync(id, _endpointInstance);
-			return RedirectToAction("Index", new { id = getCarResponse.Car.CompanyId });
-		}
+        // GET: Car/Edit/5
+        public async Task<IActionResult> Edit(Guid id)
+        {
+            var car = await _dataAccess.GetCar(id);
+            car.Disabled = true; //Prevent updates of Online/Offline while editing
+            var message = new UpdateCar();
+            // TODO: map object and massege
 
-		public async Task<bool> RegNrAvailableAsync(string regNr)
-		{
-			var getCarsResponse = await Utils.Utils.GetCarsResponseAsync(_endpointInstance);
-			return getCarsResponse.Cars.All(c => c.RegNr != regNr);
-		}
+            await _endpointInstance.Send(message).ConfigureAwait(false);
+            var company = await _dataAccess.GetCompany(car.CompanyId);
+            ViewBag.CompanyName = company.Name;
+            return View(car);
+        }
 
-		public async Task<bool> VinAvailableAsync(string vin)
-		{
-			var getCarsResponse = await Utils.Utils.GetCarsResponseAsync(_endpointInstance);
-			return getCarsResponse.Cars.All(c => c.VIN != vin);
-		}
-	}
+        // POST: Car/Edit/5
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Guid id, [Bind("Id, Online")] Car car)
+        {
+            if (!ModelState.IsValid) return View(car);
+            //var oldCar = await _dataAccess.GetCar(id);
+            //oldCar.Online = car.Online;
+            //oldCar.Disabled = false; //Enable updates of Online/Offline when editing done
+
+            var message = new UpdateCar
+            {
+                Online = car.Online,
+                Disabled = false //?? Enable updates of Online/Offline when editing done
+            };
+
+            await _endpointInstance.Send(message).ConfigureAwait(false);
+
+            return RedirectToAction("Index", new { id = car.CompanyId });
+        }
+
+        // GET: Car/Delete/5
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            return View(await _dataAccess.GetCar(id));
+        }
+
+        // POST: Car/Delete/5
+        [HttpPost]
+        [ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        {
+            var message = new DeleteCar(){CarId = id};
+            // TODO: pass in the company id from the ui
+            var companyId = Guid.NewGuid();
+
+            await _endpointInstance.Send(message).ConfigureAwait(false);
+
+            return RedirectToAction("Index", new { id = companyId });
+        }
+
+        public async Task<bool> RegNrAvailableAsync(string regNr)
+        {
+            var cars = await _dataAccess.GetCars();
+            return cars.All(c => c.RegNr != regNr);
+        }
+
+        public async Task<bool> VinAvailableAsync(string vin)
+        {
+            var cars = await _dataAccess.GetCars();
+            return cars.All(c => c.VIN != vin);
+        }
+    }
 }

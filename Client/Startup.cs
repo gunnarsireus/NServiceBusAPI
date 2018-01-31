@@ -1,101 +1,86 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using NServiceBus;
-using Client.DAL;
-using Client.Services;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
-using Client.Models;
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-
 namespace Client
 {
-	public class Startup
-	{
-		IEndpointInstance EndpointInstance { get; set; }
+    using System.IO;
+    using Client.Models;
+    using Client.Services;
+    using Messages.Commands;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Identity;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Logging;
+    using NServiceBus;
+    using Shared.DAL;
 
-		// This method gets called by the runtime. Use this method to add services to the container.
-		public void ConfigureServices(IServiceCollection services)
-		{
-			var endpointConfiguration = new EndpointConfiguration("NServiceBusCore.Client");
-			var transport = endpointConfiguration.UseTransport<LearningTransport>();
-			endpointConfiguration.UsePersistence<LearningPersistence>();
-			endpointConfiguration.MakeInstanceUniquelyAddressable("1");
-			endpointConfiguration.EnableCallbacks();
+    public class Startup
+    {
+        IEndpointInstance EndpointInstance { get; set; }
 
-			EndpointInstance = Endpoint.Start(endpointConfiguration).GetAwaiter().GetResult();
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            var endpointConfiguration = new EndpointConfiguration("NServiceBusCore.Client");
+            var transport = endpointConfiguration.UseTransport<LearningTransport>();
+            endpointConfiguration.UsePersistence<LearningPersistence>();
+	        endpointConfiguration.UsePersistence<LearningPersistence>();
 
-			services.AddSingleton(EndpointInstance);
+            endpointConfiguration.UseTransport<LearningTransport>()
+                .Routing().RouteToEndpoint(assembly: typeof(CreateCar).Assembly, destination: "NServiceBusCore.Server");
 
-			services.AddIdentity<ApplicationUser, IdentityRole>()
-				.AddEntityFrameworkStores<ApplicationDbContext>()
-				.AddDefaultTokenProviders();
+			endpointConfiguration.Conventions().DefiningCommandsAs(t =>
+                    t.Namespace != null && t.Namespace.StartsWith("Messages") &&
+                    (t.Namespace.EndsWith("Commands")))
+                .DefiningEventsAs(t =>
+                    t.Namespace != null && t.Namespace.StartsWith("Messages") &&
+                    t.Namespace.EndsWith("Events"));
 
-			//// Add application services.
-			services.AddTransient<IEmailSender, EmailSender>();
+            EndpointInstance = Endpoint.Start(endpointConfiguration).GetAwaiter().GetResult();
 
-			services.AddMvc();
+            services.AddSingleton(EndpointInstance);
 
-			var task = ConfigureServicesAsync(services);
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
 
-			task.Wait();
+            //// Add application services.
+            services.AddTransient<IEmailSender, EmailSender>();
+            services.AddMvc();
 
-		}
+           // var dblocation = Directory.GetCurrentDirectory() + @"\Server\AppData";
 
-		async Task ConfigureServicesAsync(IServiceCollection services)
-		{
-			string aspNetDb = null;
-			var aspNetDbLocation = new AspNetDbLocation();
-			try
-			{
-				var getAspNetDb = await aspNetDbLocation.GetAspNetDbAsync(EndpointInstance);
-				aspNetDb = getAspNetDb.AspNetDb;
-			}
-			catch (Exception e)
-			{
-				//Do nothing
-			}
-			if (aspNetDb != null)
-			{
-				services.AddDbContext<ApplicationDbContext>(options =>
-					options.UseSqlite("Data Source=" + aspNetDb));
-			}
-			else
-			{
-				services.AddDbContext<ApplicationDbContext>(options =>
-					options.UseSqlite("Data Source=" + Directory.GetCurrentDirectory() + "\\App_Data\\AspNet.db"));
-			}
-		}
+            var dblocation = Directory.GetParent(Directory.GetCurrentDirectory()) + @"\Server\App_Data";
 
-		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
-		{
-			loggerFactory.AddDebug();
-			if (env.IsDevelopment())
-			{
-				app.UseDeveloperExceptionPage();
-				app.UseBrowserLink();
-				app.UseDatabaseErrorPage();
-			}
-			else
-			{
-				app.UseExceptionHandler("/Home/Error");
-			}
+            services.AddDbContext<CarApiContext>(options => options.UseSqlite("Data Source=" + dblocation + "/Car.db"));
 
-			app.UseStaticFiles();
+            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite("Data Source=" + dblocation + "/AspNet.db"));
+        }
+        
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        {
+            loggerFactory.AddDebug();
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseBrowserLink();
+                app.UseDatabaseErrorPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+            }
 
-			app.UseAuthentication();
+            app.UseStaticFiles();
 
-			app.UseMvc(routes =>
-			{
-				routes.MapRoute(
-					"default",
-					"{controller=Home}/{action=Index}/{id?}");
-			});
-		}
-	}
+            app.UseAuthentication();
+
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    "default",
+                    "{controller=Home}/{action=Index}/{id?}");
+            });
+        }
+    }
 }

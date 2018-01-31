@@ -1,52 +1,65 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Client.Models.HomeViewModel;
-using Client.Models;
-using NServiceBus;
-using Shared.Models;
-
-namespace Client.Controllers
+﻿namespace Client.Controllers
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Diagnostics;
+	using System.Linq;
+	using System.Threading.Tasks;
+	using Client.Models;
+	using Client.Models.HomeViewModel;
+	using Messages.Commands;
+	using Microsoft.AspNetCore.Mvc;
+	using NServiceBus;
+	using Shared.DAL;
+	using Shared.Models;
+
 	public class HomeController : Controller
 	{
 		readonly IEndpointInstance _endpointInstance;
-		public HomeController(IEndpointInstance endPointEndpointInstance)
+        readonly CarDataAccess _dataAccess;
+
+        public HomeController(IEndpointInstance endPointEndpointInstance, CarApiContext carApiContext)
 		{
 			_endpointInstance = endPointEndpointInstance;
-		}
+            _dataAccess = new CarDataAccess(carApiContext);
+        }
 
 		public async Task<IActionResult> Index()
 		{
 			List<Company> companies;
 			try
 			{
-				var responseTask = await Utils.Utils.GetCompaniesResponseAsync(_endpointInstance);
-				companies = responseTask.Companies;
+				companies = await _dataAccess.GetCompanies();
 			}
 			catch (Exception e)
 			{
-				TempData["CustomError"] = "Ingen kontakt med servern! CarAPI måste startas innan Client kan köras!";
+				TempData["CustomError"] = "No contakt with server!";
 				return View("Index", new HomeViewModel(Guid.NewGuid()) { Companies = new List<Company>() });
 			}
 
-			var getCarsResponse = await Utils.Utils.GetCarsResponseAsync(_endpointInstance);
-			var allCars = getCarsResponse.Cars.ToList();
+			// can we get the list from the UI?
+			var allCars = await _dataAccess.GetCars();
+
 			foreach (var car in allCars)
 			{
 				car.Disabled = false; //Enable updates of Online/Offline
-				var updateCarResponse = Utils.Utils.UpdateCarResponseAsync(car, _endpointInstance);
-			}
+				var message = new UpdateCar
+				{
+					CompanyId = car.CompanyId
+				};
+				// TODO: map object and massege
+
+				await _endpointInstance.Send(message).ConfigureAwait(false);
+            }
 
 			foreach (var company in companies)
 			{
 				var companyCars = allCars.Where(o => o.CompanyId == company.Id).ToList();
 				company.Cars = companyCars;
 			}
+
 			var homeViewModel = new HomeViewModel(Guid.NewGuid()) { Companies = companies };
+
 			return View("Index", homeViewModel);
 		}
 

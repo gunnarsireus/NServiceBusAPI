@@ -1,5 +1,5 @@
 ﻿using Shared.Models;
-using Server.DAL;
+using Shared.DAL;
 using Microsoft.EntityFrameworkCore;
 
 namespace Server.Data
