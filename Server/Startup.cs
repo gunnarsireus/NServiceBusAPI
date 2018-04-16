@@ -27,11 +27,11 @@ namespace Server
 		IContainer ApplicationContainer { get; set; }
 		IConfigurationRoot Configuration { get; set; }
 
-		// This method gets called by the runtime. Use this method to add services to the container.
+		//// This method gets called by the runtime. Use this method to add services to the container.
 		public IServiceProvider ConfigureServices(IServiceCollection services)
 		{
 			var dbContextOptionsBuilder = new DbContextOptionsBuilder<CarApiContext>();
-			dbContextOptionsBuilder.UseSqlite("DataSource=App_Data/Car.db");
+			dbContextOptionsBuilder.UseSqlite("DataSource=C:/Users/gunna/Documents/GitHub/NServiceBusAPI/Server/App_Data/Car.db");
 
 			var builder = new ContainerBuilder();
 			builder.Populate(services);

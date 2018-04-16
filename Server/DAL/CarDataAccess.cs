@@ -16,7 +16,7 @@ namespace Server.DAL
 
 		public CarDataAccess()
         {
-            _optionsBuilder.UseSqlite("DataSource=App_Data/Car.db");
+            _optionsBuilder.UseSqlite("DataSource=C:/Users/gunna/Documents/GitHub/NServiceBusAPI/Server/App_Data/Car.db");
         }
 
 	    public ICollection<Car> GetCars()

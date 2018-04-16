@@ -13,15 +13,23 @@
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.6.2" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.0-preview2-final" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.1.0-preview2-final" />
     <PackageReference Include="NServiceBus" Version="7.0.0-beta0012" />
     <PackageReference Include="NServiceBus.Autofac" Version="7.0.0-beta0004" />
     <PackageReference Include="NServiceBus.Callbacks" Version="3.0.0-beta0003" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0-preview2-26406-04" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="App_Data\AspNet.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

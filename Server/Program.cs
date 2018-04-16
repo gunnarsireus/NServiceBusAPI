@@ -21,7 +21,7 @@ namespace Server
 				.UseContentRoot(Directory.GetCurrentDirectory())
 				.UseIISIntegration()
 				.UseStartup<Startup>()
-				.InitSqLiteDb("DataSource=App_Data/Car.db")
+				.InitSqLiteDb("DataSource=C:/Users/gunna/Documents/GitHub/NServiceBusAPI/Server/App_Data/Car.db")
 				.Build();
 	}
 
