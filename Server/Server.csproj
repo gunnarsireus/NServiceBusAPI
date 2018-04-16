@@ -7,13 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="DAL\**" />
-    <EmbeddedResource Remove="DAL\**" />
-    <None Remove="DAL\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="CommandHandlers\SetCarOnlineOfflineRequestHandler.cs" />
+    <Compile Remove="RequestHandler\SetCarOnlineOfflineRequestHandler.cs" />
   </ItemGroup>
 
   <ItemGroup>

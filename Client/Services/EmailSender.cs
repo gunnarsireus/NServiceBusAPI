@@ -8,8 +8,6 @@ namespace Client.Services
     {
         public Task SendEmailAsync(string email, string subject, string message)
         {
-            // this could be done using NServiceBus
-            // send a message to an email component
             return Task.CompletedTask;
         }
     }

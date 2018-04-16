@@ -1,86 +1,101 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NServiceBus;
+using Client.DAL;
+using Client.Services;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Client.Models;
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+
 namespace Client
 {
-    using System.IO;
-    using Client.Models;
-    using Client.Services;
-    using Shared.Commands;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Identity;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Logging;
-    using NServiceBus;
-    using Shared.DAL;
+	public class Startup
+	{
+		IEndpointInstance EndpointInstance { get; set; }
 
-    public class Startup
-    {
-        IEndpointInstance EndpointInstance { get; set; }
+		// This method gets called by the runtime. Use this method to add services to the container.
+		public void ConfigureServices(IServiceCollection services)
+		{
+			var endpointConfiguration = new EndpointConfiguration("NServiceBusCore.Client");
+			var transport = endpointConfiguration.UseTransport<LearningTransport>();
+			endpointConfiguration.UsePersistence<LearningPersistence>();
+			endpointConfiguration.MakeInstanceUniquelyAddressable("1");
+			endpointConfiguration.EnableCallbacks();
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            var endpointConfiguration = new EndpointConfiguration("NServiceBusCore.Client");
-            var transport = endpointConfiguration.UseTransport<LearningTransport>();
-            endpointConfiguration.UsePersistence<LearningPersistence>();
-	        endpointConfiguration.UsePersistence<LearningPersistence>();
+			EndpointInstance = Endpoint.Start(endpointConfiguration).GetAwaiter().GetResult();
 
-            endpointConfiguration.UseTransport<LearningTransport>()
-                .Routing().RouteToEndpoint(assembly: typeof(CreateCar).Assembly, destination: "NServiceBusCore.Server");
+			services.AddSingleton(EndpointInstance);
 
-			endpointConfiguration.Conventions().DefiningCommandsAs(t =>
-                    t.Namespace != null && t.Namespace.StartsWith("Messages") &&
-                    (t.Namespace.EndsWith("Commands")))
-                .DefiningEventsAs(t =>
-                    t.Namespace != null && t.Namespace.StartsWith("Messages") &&
-                    t.Namespace.EndsWith("Events"));
+			services.AddIdentity<ApplicationUser, IdentityRole>()
+				.AddEntityFrameworkStores<ApplicationDbContext>()
+				.AddDefaultTokenProviders();
 
-            EndpointInstance = Endpoint.Start(endpointConfiguration).GetAwaiter().GetResult();
+			//// Add application services.
+			services.AddTransient<IEmailSender, EmailSender>();
 
-            services.AddSingleton(EndpointInstance);
+			services.AddMvc();
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+			var task = ConfigureServicesAsync(services);
 
-            //// Add application services.
-            services.AddTransient<IEmailSender, EmailSender>();
-            services.AddMvc();
+			task.Wait();
 
-           // var dblocation = Directory.GetCurrentDirectory() + @"\Server\AppData";
+		}
 
-            var dblocation = Directory.GetParent(Directory.GetCurrentDirectory()) + @"\Server\App_Data";
+		async Task ConfigureServicesAsync(IServiceCollection services)
+		{
+			string aspNetDb = null;
+			var aspNetDbLocation = new AspNetDbLocation();
+			try
+			{
+				var getAspNetDb = await aspNetDbLocation.GetAspNetDbAsync(EndpointInstance);
+				aspNetDb = getAspNetDb.AspNetDb;
+			}
+			catch (Exception e)
+			{
+				//Do nothing
+			}
+			if (aspNetDb != null)
+			{
+				services.AddDbContext<ApplicationDbContext>(options =>
+					options.UseSqlite("Data Source=" + aspNetDb));
+			}
+			else
+			{
+				services.AddDbContext<ApplicationDbContext>(options =>
+					options.UseSqlite("Data Source=" + Directory.GetCurrentDirectory() + "\\App_Data\\AspNet.db"));
+			}
+		}
 
-            services.AddDbContext<CarApiContext>(options => options.UseSqlite("Data Source=" + dblocation + "/Car.db"));
+		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+		public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+		{
+			loggerFactory.AddDebug();
+			if (env.IsDevelopment())
+			{
+				app.UseDeveloperExceptionPage();
+				app.UseBrowserLink();
+				app.UseDatabaseErrorPage();
+			}
+			else
+			{
+				app.UseExceptionHandler("/Home/Error");
+			}
 
-            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite("Data Source=" + dblocation + "/AspNet.db"));
-        }
-        
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
-        {
-            loggerFactory.AddDebug();
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseBrowserLink();
-                app.UseDatabaseErrorPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
+			app.UseStaticFiles();
 
-            app.UseStaticFiles();
+			app.UseAuthentication();
 
-            app.UseAuthentication();
-
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    "default",
-                    "{controller=Home}/{action=Index}/{id?}");
-            });
-        }
-    }
+			app.UseMvc(routes =>
+			{
+				routes.MapRoute(
+					"default",
+					"{controller=Home}/{action=Index}/{id?}");
+			});
+		}
+	}
 }

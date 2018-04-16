@@ -1,44 +1,45 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Client.Models;
+using Client.Models.CompanyViewModel;
+using Shared.Models;
+
 namespace CarClient.Controllers
 {
-	using System;
-	using System.Linq;
-	using System.Threading.Tasks;
-	using Client.Models;
-	using Client.Models.CompanyViewModel;
-	using Shared.Commands;
-	using Microsoft.AspNetCore.Identity;
-	using Microsoft.AspNetCore.Mvc;
-	using Shared.DAL;
-    using NServiceBus;
-	using Shared.Models;
+	using NServiceBus;
 
 	public class CompanyController : Controller
 	{
 		readonly SignInManager<ApplicationUser> _signInManager;
 		readonly IEndpointInstance _endpointInstance;
-        readonly CarDataAccess _dataAccess;
 
-        public CompanyController(SignInManager<ApplicationUser> signInManager, IEndpointInstance endpointInstance, CarApiContext carApiContext)
+		public CompanyController(SignInManager<ApplicationUser> signInManager, IEndpointInstance endpointInstance)
 		{
 			_signInManager = signInManager;
 			_endpointInstance = endpointInstance;
-            _dataAccess = new CarDataAccess(carApiContext);
-        }
-		
+		}
+
+
 		// GET: Company
+
 		public async Task<IActionResult> Index()
 		{
 			if (!_signInManager.IsSignedIn(User)) return RedirectToAction("Index", "Home");
-			var companies = await _dataAccess.GetCompanies();
+			var getCompaniesResponse = await Client.Utils.Utils.GetCompaniesResponseAsync(_endpointInstance);
+			var companies = getCompaniesResponse.Companies;
 
 			foreach (var company in companies)
 			{
-				var cars = await _dataAccess.GetCars();
+				var getCarsResponse = await Client.Utils.Utils.GetCarsResponseAsync(_endpointInstance);
+				var cars = getCarsResponse.Cars;
 				cars = cars.Where(c => c.CompanyId == company.Id).ToList();
 				company.Cars = cars;
 			}
 
-			var companyViewModel = new CompanyListViewModel { Companies = companies };
+			var companyViewModel = new CompanyViewModel { Companies = companies };
 
 			return View(companyViewModel);
 		}
@@ -46,7 +47,8 @@ namespace CarClient.Controllers
 		// GET: Company/Details/5
 		public async Task<IActionResult> Details(Guid id)
 		{
-			var company = await _dataAccess.GetCompany(id);
+			var getCompanyResponse = await Client.Utils.Utils.GetCompanyResponseAsync(id, _endpointInstance);
+			var company = getCompanyResponse.Company;
 
 			return View(company);
 		}
@@ -66,19 +68,16 @@ namespace CarClient.Controllers
 		{
 			if (!ModelState.IsValid) return View(company);
 			company.Id = Guid.NewGuid();
+			var createCompanyResponse = await Client.Utils.Utils.CreateCompanyResponseAsync(company, _endpointInstance);
 
-            var message = new CreateCompany();
-			// TODO: map object and massege
-
-			await _endpointInstance.Send(message).ConfigureAwait(false);
-
-            return RedirectToAction(nameof(Index));
+			return RedirectToAction(nameof(Index));
 		}
 
 		// GET: Company/Edit/5
 		public async Task<IActionResult> Edit(Guid id)
 		{
-			var company = await _dataAccess.GetCompany(id);
+			var getCompanyResponse = await Client.Utils.Utils.GetCompanyResponseAsync(id, _endpointInstance);
+			var company = getCompanyResponse.Company;
 			return View(company);
 		}
 
@@ -90,23 +89,21 @@ namespace CarClient.Controllers
 		public async Task<IActionResult> Edit(Guid id, [Bind("Id,CreationTime, Name, Address")] Company company)
 		{
 			if (!ModelState.IsValid) return View(company);
+			var getCompanyResponse = await Client.Utils.Utils.GetCompanyResponseAsync(id, _endpointInstance);
+			var oldCompany = getCompanyResponse.Company;
 
-			var message = new UpdateCompany
-			{
-				Id = company.Id
-			};
-			// TODO: map object and massege
-			// ....
+			oldCompany.Name = company.Name;
+			oldCompany.Address = company.Address;
+			var updateCompanyResponse = await Client.Utils.Utils.UpdateCompanyResponseAsync(company, _endpointInstance);
 
-			await _endpointInstance.Send(message).ConfigureAwait(false);
-
-            return RedirectToAction(nameof(Index));
+			return RedirectToAction(nameof(Index));
 		}
 
 		// GET: Company/Delete/5
 		public async Task<IActionResult> Delete(Guid id)
 		{
-			var company = await _dataAccess.GetCompany(id);
+			var getCompanyResponse = await Client.Utils.Utils.GetCompanyResponseAsync(id, _endpointInstance);
+			var company = getCompanyResponse.Company;
 			return View(company);
 		}
 
@@ -116,16 +113,8 @@ namespace CarClient.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> DeleteConfirmed(Guid id)
 		{
-			var message = new DeleteCompany
-			{
-				CompanyId = id
-			};
-			// TODO: map object and massege
-			//...
-
-			await _endpointInstance.Send(message).ConfigureAwait(false);
-
-            return RedirectToAction(nameof(Index));
+			var deleteCompanyResponse = await Client.Utils.Utils.DeleteCompanyResponseAsync(id, _endpointInstance);
+			return RedirectToAction(nameof(Index));
 		}
 	}
 }

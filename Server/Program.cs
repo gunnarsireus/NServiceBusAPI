@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using System.Globalization;
 using Microsoft.AspNetCore;
+using Server.Extensions;
 using System.IO;
 
 namespace Server
@@ -20,6 +21,7 @@ namespace Server
 				.UseContentRoot(Directory.GetCurrentDirectory())
 				.UseIISIntegration()
 				.UseStartup<Startup>()
+				.InitSqLiteDb("DataSource=App_Data/Car.db")
 				.Build();
 	}
 

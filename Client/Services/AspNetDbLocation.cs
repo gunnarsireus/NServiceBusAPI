@@ -1,14 +1,21 @@
-﻿namespace Client.Services
-{
-	using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using NServiceBus;
+using Shared.Requests;
+using Shared.Response;
 
+namespace Client.Services
+{
 	// This class is used by the application to get the location of the AspNet.db used for authntication of users.
-	// can be replaced with LocalDB
-	public class dBlocations
+	public class AspNetDbLocation : IAspNetDbLocation
     {
-	    public Task GetDbLocationAsync()
+	    public async Task<GetAspNetDbResponse> GetAspNetDbAsync(IEndpointInstance endpointInstance)
 	    {
-		    return Task.CompletedTask;
+		    var message = new GetAspNetDbRequest();
+		    var sendOptions = new SendOptions();
+		    sendOptions.SetDestination("NServiceBusCore.Server");
+		    var responseTask = await endpointInstance
+			    .Request<GetAspNetDbResponse>(message, sendOptions);
+		    return responseTask;
 		}
 	}
 }

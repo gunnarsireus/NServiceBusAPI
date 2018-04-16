@@ -1,4 +1,5 @@
-﻿using Shared.DAL;
+﻿using Server.Data;
+using Server.DAL;
 
 namespace Server.Data
 {
