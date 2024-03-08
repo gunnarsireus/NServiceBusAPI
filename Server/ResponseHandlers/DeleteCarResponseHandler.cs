@@ -17,18 +17,10 @@ namespace Server.ResponseHandlers
 
     static ILog log = LogManager.GetLogger<DeleteCarResponseHandler>();
 
-    public async Task Handle(DeleteCarResponse message, IMessageHandlerContext context)
+    public Task Handle(DeleteCarResponse message, IMessageHandlerContext context)
     {
       log.Info("Received DeleteCarResponse.");
-      
-      //await _carRepository.RemoveCarAsync(message.CarId);
-
-      //var response = new DeleteCarResponse()
-      //{
-      //  DataId = message.DataId,
-      //};
-
-      //await context.Reply(response);
+      return Task.CompletedTask;
     }
   }
 }

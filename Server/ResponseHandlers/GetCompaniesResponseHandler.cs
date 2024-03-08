@@ -17,19 +17,10 @@ namespace Server.ResponseHandlers
 
     static ILog log = LogManager.GetLogger<GetCompaniesResponse>();
 
-		public async Task Handle(GetCompaniesResponse message, IMessageHandlerContext context)
+		public Task Handle(GetCompaniesResponse message, IMessageHandlerContext context)
 		{
 			log.Info("Received GetCompaniesResponse");
-
-      var companies = await _companyRepository.GetAllCompaniesAsync();
-
-      //var response = new GetCompaniesResponse()
-      //{
-      //  DataId = message.DataId,
-      //  Companies = companies.ToList()
-      //};
-
-      //await context.Reply(response);
+      return Task.CompletedTask;
     }
 	}
 }
