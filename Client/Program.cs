@@ -85,8 +85,8 @@ namespace Client
             app.UseAuthorization();
 
             app.MapControllerRoute(
-            name: "default",
-            pattern: "{controller=Home}/{action=Index}/{id?}");
+              name: "default",
+              pattern: "{controller=Home}/{action=Index}/{id?}");
 
             await app.RunAsync().ConfigureAwait(false);
         }
