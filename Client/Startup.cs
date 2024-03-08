@@ -38,7 +38,6 @@ namespace Client
       var connectionString = Configuration.GetConnectionString("NServiceBusTransport");
       var transport = new SqlServerTransport(connectionString)
       {
-        DefaultSchema = "dbo",
         Subscriptions =
             {
                 SubscriptionTableName = new SubscriptionTableName(
@@ -47,10 +46,6 @@ namespace Client
             },
         TransportTransactionMode = TransportTransactionMode.SendsAtomicWithReceive
       };
-
-      transport.SchemaAndCatalog.UseSchemaForQueue("error", "dbo");
-      transport.SchemaAndCatalog.UseSchemaForQueue("audit", "dbo");
-      transport.SchemaAndCatalog.UseSchemaForQueue("NServiceBusCore.Client", "dbo");
 
       endpointConfiguration.UseSerialization<SystemJsonSerializer>();
       var routing = endpointConfiguration.UseTransport(transport);

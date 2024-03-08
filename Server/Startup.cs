@@ -71,7 +71,6 @@ namespace Server
 
       var transport = new SqlServerTransport(connectionString)
       {
-        DefaultSchema = "dbo",
         TransportTransactionMode = TransportTransactionMode.SendsAtomicWithReceive,
         Subscriptions =
             {
@@ -80,13 +79,9 @@ namespace Server
             }
       };
 
-      transport.SchemaAndCatalog.UseSchemaForQueue("error", "dbo");
-      transport.SchemaAndCatalog.UseSchemaForQueue("audit", "dbo");
-      transport.SchemaAndCatalog.UseSchemaForQueue("NServiceBusCore.Client", "client");
-
       endpointConfiguration.UseSerialization<SystemJsonSerializer>();
       var routing = endpointConfiguration.UseTransport(transport);
-      SqlHelper.CreateSchema(connectionString, "server").GetAwaiter().GetResult();
+
       endpointConfiguration.MakeInstanceUniquelyAddressable("1");
 
             EndpointInstance = EndpointWithExternallyManagedContainer.Create(endpointConfiguration, services)
