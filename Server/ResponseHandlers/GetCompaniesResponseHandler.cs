@@ -1,18 +1,14 @@
 using NServiceBus;
-using System.Threading.Tasks;
 using NServiceBus.Logging;
-using Shared.Responses;
-using Shared.Responses;
-using System.Linq;
 using Server.Data;
-using Microsoft.EntityFrameworkCore;
-using Server.DAL;
+using Shared.Responses;
+using System.Threading.Tasks;
 
 namespace Server.ResponseHandlers
 {
-	public class GetCompaniesResponseHandler : IHandleMessages<GetCompaniesResponse>
+  public class GetCompaniesResponseHandler : IHandleMessages<GetCompaniesResponse>
 	{
-    readonly ICompanyRepository _companyRepository;
+    private readonly ICompanyRepository _companyRepository;
 
     public GetCompaniesResponseHandler(ICompanyRepository caompanyRepository)
     {
