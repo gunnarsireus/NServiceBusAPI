@@ -1,26 +1,26 @@
-﻿using System;
-using System.Security.Claims;
-using System.Threading.Tasks;
+﻿using Client.Models;
+using Client.Models.AccountViewModels;
+using Client.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Client.Services;
-using Client.Models;
-using Client.Models.AccountViewModels;
+using System;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Client.Controllers
 {
 
-	[Authorize]
+    [Authorize]
     [Route("[controller]/[action]")]
     public class AccountController : Controller
     {
-	    readonly IEmailSender _emailSender;
-	    readonly ILogger _logger;
-	    readonly SignInManager<ApplicationUser> _signInManager;
-	    readonly UserManager<ApplicationUser> _userManager;
+        readonly IEmailSender _emailSender;
+        readonly ILogger _logger;
+        readonly SignInManager<ApplicationUser> _signInManager;
+        readonly UserManager<ApplicationUser> _userManager;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
@@ -66,7 +66,7 @@ namespace Client.Controllers
                     return RedirectToLocal(returnUrl);
                 }
                 if (result.RequiresTwoFactor)
-                    return RedirectToAction(nameof(LoginWith2fa), new {returnUrl, model.RememberMe});
+                    return RedirectToAction(nameof(LoginWith2fa), new { returnUrl, model.RememberMe });
                 if (result.IsLockedOut)
                 {
                     _logger.LogWarning("User account locked out.");
@@ -90,7 +90,7 @@ namespace Client.Controllers
             if (user == null)
                 throw new ApplicationException($"Unable to load two-factor authentication user.");
 
-            var model = new LoginWith2faViewModel {RememberMe = rememberMe};
+            var model = new LoginWith2faViewModel { RememberMe = rememberMe };
             ViewData["ReturnUrl"] = returnUrl;
 
             return View(model);
@@ -199,7 +199,7 @@ namespace Client.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser {UserName = model.Email, Email = model.Email};
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
@@ -235,7 +235,7 @@ namespace Client.Controllers
         public IActionResult ExternalLogin(string provider, string returnUrl = null)
         {
             // Request a redirect to the external login provider.
-            var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new {returnUrl});
+            var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl });
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return Challenge(properties, provider);
         }
@@ -267,7 +267,7 @@ namespace Client.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             ViewData["LoginProvider"] = info.LoginProvider;
             var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-            return View("ExternalLogin", new ExternalLoginViewModel {Email = email});
+            return View("ExternalLogin", new ExternalLoginViewModel { Email = email });
         }
 
         [HttpPost]
@@ -282,7 +282,7 @@ namespace Client.Controllers
                 var info = await _signInManager.GetExternalLoginInfoAsync();
                 if (info == null)
                     throw new ApplicationException("Error loading external login information during confirmation.");
-                var user = new ApplicationUser {UserName = model.Email, Email = model.Email};
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
@@ -358,7 +358,7 @@ namespace Client.Controllers
         {
             if (code == null)
                 throw new ApplicationException("A code must be supplied for password reset.");
-            var model = new ResetPasswordViewModel {Code = code};
+            var model = new ResetPasswordViewModel { Code = code };
             return View(model);
         }
 

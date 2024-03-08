@@ -1,18 +1,18 @@
-using System;
 using NServiceBus;
+using System;
 
 namespace Shared.Requests
 {
-	[Serializable]
-	public class GetCarRequest : IMessage
+    [Serializable]
+    public class GetCarRequest : IMessage
   {
-		public GetCarRequest(Guid carId)
-		{
-			DataId = Guid.NewGuid();
-			CarId = carId;
-		}
+        public GetCarRequest(Guid carId)
+        {
+            DataId = Guid.NewGuid();
+            CarId = carId;
+        }
 
-    public Guid DataId { get; set; }
-    public Guid CarId { get; set; }
-  }
+        public Guid DataId { get; set; }
+        public Guid CarId { get; set; }
+    }
 }

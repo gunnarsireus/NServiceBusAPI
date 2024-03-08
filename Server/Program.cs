@@ -1,34 +1,96 @@
-﻿using System;
-using Microsoft.AspNetCore.Hosting;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using NServiceBus;
+using Server.DAL;
+using Server.Data;
+using Server.RequestHandlers;
+using Server.ResponseHandlers;
+using Shared.Particular;
+using System;
+using System.Globalization;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Server
 {
+  internal class Program
+    {
+        public static async Task Main(string[] args)
+        {
+            CultureInfo.CurrentUICulture = new CultureInfo("en-US");
+            var builder = new ConfigurationBuilder()
+              .SetBasePath(Directory.GetCurrentDirectory())
+              .AddJsonFile("appsettings.json");
 
-	internal class Program
-	{
-		public static async Task Main(string[] args)
-		{
-            using var host = CreateHostBuilder(args).Build();
-            await host.StartAsync();
+            var app = CreateHostBuilder(args).Build();
 
-            Console.WriteLine("Press any key to shutdown");
-            Console.ReadKey();
-            await host.StopAsync();
+            using (var scope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                scope.ServiceProvider.GetRequiredService<CarApiContext>().EnsureSeedData();
+            }
+
+            await app.RunAsync();
         }
 
-        static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host.CreateDefaultBuilder(args)
-            .UseNServiceBus(c =>
-            {
-                var endpointConfiguration = new EndpointConfiguration("Sample.Core");
-                endpointConfiguration.UseSerialization<SystemJsonSerializer>();
-                endpointConfiguration.UseTransport<LearningTransport>();
-                return endpointConfiguration;
-            }).ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
-  }
+        static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            var dbFilePath = Path.Combine(Path.Combine(AppContext.BaseDirectory, "App_Data"), "Car.db");
 
+            return Host.CreateDefaultBuilder(args)
+                .ConfigureLogging(logging =>
+                {
+                    logging.AddConsole();
+                })
+               .UseNServiceBus(ctx =>
+               {
+                   string endpointName = "NServiceBusCore.Server";
+
+                   var endpointConfiguration = new EndpointConfiguration(endpointName);
+
+                   endpointConfiguration.ApplyEndpointConfiguration(
+                       ctx.Configuration.GetConnectionString("NServiceBusTransport"),
+                       endpointName,
+                       EndpointMappings.MessageEndpointMappings());
+
+                 endpointConfiguration.RegisterComponents(registration =>
+                 {
+                   registration.AddTransient<CreateCarRequestHandler>();
+                   registration.AddTransient<CreateCompanyRequestHandler>();
+                   registration.AddTransient<DeleteCarRequestHandler>();
+                   registration.AddTransient<DeleteCompanyRequestHandler>();
+                   registration.AddTransient<GetCarRequestHandler>();
+                   registration.AddTransient<GetCarsRequestHandler>();
+                   registration.AddTransient<GetCompanyRequestHandler>();
+                   registration.AddTransient<GetCompaniesRequestHandler>();
+                   registration.AddTransient<UpdateCarRequestHandler>();
+                   registration.AddTransient<UpdateCompanyRequestHandler>();
+
+                   registration.AddTransient<CreateCarResponseHandler>();
+                   registration.AddTransient<CreateCompanyResponseHandler>();
+                   registration.AddTransient<DeleteCarResponseHandler>();
+                   registration.AddTransient<DeleteCompanyResponseHandler>();
+                   registration.AddTransient<GetCarResponseHandler>();
+                   registration.AddTransient<GetCarsResponseHandler>();
+                   registration.AddTransient<GetCompanyResponseHandler>();
+                   registration.AddTransient<GetCompaniesResponseHandler>();
+                   registration.AddTransient<UpdateCarResponseHandler>();
+                   registration.AddTransient<UpdateCompanyResponseHandler>();
+                 });
+
+
+                 return endpointConfiguration;
+               })
+               .ConfigureServices(services =>
+               {
+                   services.AddDbContext<CarApiContext>(options => options.UseSqlite($"Data Source={dbFilePath}"));
+                   services.AddTransient<ICarRepository, CarRepository>();
+                   services.AddTransient<ICompanyRepository, CompanyRepository>();
+               });
+        }
+    }
 }
+

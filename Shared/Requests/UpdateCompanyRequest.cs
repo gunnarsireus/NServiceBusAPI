@@ -1,19 +1,19 @@
-using System;
 using NServiceBus;
 using Shared.Models;
+using System;
 
 namespace Shared.Requests
 {
-	[Serializable]
-	public class UpdateCompanyRequest : IMessage
+    [Serializable]
+    public class UpdateCompanyRequest : IMessage
   {
-		public UpdateCompanyRequest(Company company)
-		{
-			DataId = Guid.NewGuid();
-			Company = company;
-		}
+        public UpdateCompanyRequest(Company company)
+        {
+            DataId = Guid.NewGuid();
+            Company = company;
+        }
 
-    public Guid DataId { get; set; }
-    public Company Company { get; set; }
-  }
+        public Guid DataId { get; set; }
+        public Company Company { get; set; }
+    }
 }

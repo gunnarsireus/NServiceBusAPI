@@ -1,20 +1,19 @@
 using NServiceBus;
+using Shared.Models;
 using System;
 using System.Collections.Generic;
-using Shared.Models;
 
 namespace Shared.Responses
 {
-	[Serializable]
-	public class GetCarsResponse : IMessage
-	{
-		public GetCarsResponse()
-		{
-			DataId = Guid.NewGuid();
-		}
+    [Serializable]
+    public class GetCarsResponse : IMessage
+  {
+        public GetCarsResponse()
+        {
+            DataId = Guid.NewGuid();
+        }
 
-		public Guid DataId { get; set; }
-		public List<Car> Cars { get; set; }
-	}
+        public Guid DataId { get; set; }
+        public List<Car> Cars { get; set; }
+    }
 }
-
