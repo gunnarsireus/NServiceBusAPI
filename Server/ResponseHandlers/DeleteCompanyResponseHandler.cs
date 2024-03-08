@@ -8,27 +8,12 @@ namespace Server.ResponseHandlers
 {
   public class DeleteCompanyResponseHandler : IHandleMessages<DeleteCompanyResponse>
 	{
-    readonly ICompanyRepository _companyRepository;
-
-    public DeleteCompanyResponseHandler(ICompanyRepository caompanyRepository)
-    {
-      _companyRepository = caompanyRepository;
-    }
-
     static ILog log = LogManager.GetLogger<GetCompanyResponse>();
 
-    public async Task Handle(DeleteCompanyResponse message, IMessageHandlerContext context)
+    public Task Handle(DeleteCompanyResponse message, IMessageHandlerContext context)
     {
       log.Info("Received DeleteCompanyResponse.");
-
-      //await _companyRepository.RemoveCompanyAsync(message.CompanyId);
-
-      //var response = new DeleteCompanyResponse()
-      //{
-      //  DataId = message.DataId,
-      //};
-
-      //await context.Reply(response);
+      return Task.CompletedTask;
     }
   }
 }
