@@ -10,27 +10,16 @@ namespace Shared.Particular
         public static void ApplyEndpointConfiguration(
             this EndpointConfiguration endpointConfiguration,
             string connectionString,
-            string endpointName,
             Action<RoutingSettings<SqlServerTransport>>? messageEndpointMappings = null)
         {
             var transport = new SqlServerTransport(connectionString)
             {
-                //DefaultSchema = "dbo",
                 TransportTransactionMode = TransportTransactionMode.SendsAtomicWithReceive,
-                //Subscriptions =
-                //{
-                //    CacheInvalidationPeriod = TimeSpan.FromMinutes(1),
-                //    SubscriptionTableName = new SubscriptionTableName(table: "Subscriptions", schema: "dbo")
-                //}
             };
 
-            // transport.SchemaAndCatalog.UseSchemaForQueue("error", "dbo");
-            // transport.SchemaAndCatalog.UseSchemaForQueue("audit", "dbo");
-            // transport.SchemaAndCatalog.UseSchemaForQueue(endpointName, "dbo");
+
 
             var routing = endpointConfiguration.UseTransport(transport);
-
-            // SqlHelper.CreateSchema(connectionString, endpointConfiguration.).GetAwaiter().GetResult();
 
             endpointConfiguration.MakeInstanceUniquelyAddressable("1");
             // Message serialization

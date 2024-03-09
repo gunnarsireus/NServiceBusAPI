@@ -40,7 +40,6 @@ namespace Client
 
         endpointConfiguration.ApplyEndpointConfiguration(
                   ctx.Configuration.GetConnectionString("NServiceBusTransport"),
-                  endpointName,
                   EndpointMappings.MessageEndpointMappings());
 
         return endpointConfiguration;

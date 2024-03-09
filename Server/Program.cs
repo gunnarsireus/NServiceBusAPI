@@ -51,7 +51,6 @@ namespace Server
 
            endpointConfiguration.ApplyEndpointConfiguration(
                      ctx.Configuration.GetConnectionString("NServiceBusTransport"),
-                     endpointName,
                      EndpointMappings.MessageEndpointMappings());
 
            endpointConfiguration.RegisterComponents(registration =>
