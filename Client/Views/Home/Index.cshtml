@@ -50,7 +50,7 @@
                                     @Html.DisplayNameFor(model => cars[j].Online)
                                 </th>
                             </tr>
-}
+                        }
                         <tr id="@cars[j].Id">
                             <td>
                                 @Html.DisplayFor(model => cars[j].VIN)
@@ -58,21 +58,26 @@
                             <td>
                                 @Html.DisplayFor(model => cars[j].RegNr)
                             </td>
-                            @{ var cl = cars[j].Online ? "" : "alert-danger";}
+                            @{
+                                var cl = cars[j].Online ? "" : "alert-danger";
+                            }
                             <td class="@cl">
                                 @Html.DisplayFor(model => cars[j].OnlineOrOffline)
                             </td>
-                        </tr> if (j == cars.Count - 1)
-                                {
-                                    <tr><td colspan="3"></td></tr>}
-                                }
+                        </tr>
+                        if (j == cars.Count - 1)
+                        {
+                            <tr><td colspan="3"></td></tr>
+                        }
+                    }
 
-                </tbody>      }
+                </tbody>
+            }
         </table>
     </div>
     <div class="col-lg-2">
         <h3>Show vehicles with status:</h3>
-        <input onclick="doFiltering()"  id="All"  type="radio" name="status" value="All"  checked="checked">All<br>
+        <input onclick="doFiltering()" id="All" type="radio" name="status" value="All" checked="checked">All<br>
         <input onclick="doFiltering()" id="Online" type="radio" name="status" value="Online">Online<br>
         <input onclick="doFiltering()" id="Offline" type="radio" name="status" value="Offline">Offline<br>
         <br>

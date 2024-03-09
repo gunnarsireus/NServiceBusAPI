@@ -6,29 +6,29 @@
 <h2>Company Vehicles</h2>
 
 <script type="text/javascript">
-  function ShowCars() {
-    window.location = "/Car/index?id=" + $('#CarsForCompany').val();
-  }
+    function ShowCars() {
+        window.location = "/Car/index?id=" + $('#CarsForCompany').val();
+    }
 </script>
 @if (ViewBag.CompanyId != null)
 {
-  <table>
-    <tr class="page-header">
-      <td colspan="2">Fordon för company: @ViewBag.CompanyName</td>
-    </tr>
-    <tr>
-      <td>
-        @Html.DropDownList("CarsForCompany", Model.CompanySelectList, new { onchange = "ShowCars()" })
-      </td>
-    </tr>
-  </table>
-  <p>
-    <a asp-action="Create" asp-route-id="@ViewBag.CompanyId">Create new vehicle</a>
-  </p>
+    <table>
+        <tr class="page-header">
+            <td colspan="2">Fordon för company: @ViewBag.CompanyName</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.DropDownList("CarsForCompany", Model.CompanySelectList, new { onchange = "ShowCars()" })
+            </td>
+        </tr>
+    </table>
+    <p>
+        <a asp-action="Create" asp-route-id="@ViewBag.CompanyId">Create new vehicle</a>
+    </p>
 }
 else
 {
-  <p>Companies missing</p>
+    <p>Companies missing</p>
 }
 
 <div class="row">
@@ -66,7 +66,9 @@ else
                         <td>
                             @Html.DisplayFor(modelItem => item.CreationTime)
                         </td>
-                        @{ var cl = item.Online ? "" : "alert-danger";}
+                        @{
+                            var cl = item.Online ? "" : "alert-danger";
+                        }
                         <td class="@cl">
                             @Html.DisplayFor(modelItem => item.OnlineOrOffline)
                         </td>
@@ -75,7 +77,8 @@ else
                             <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
                             <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
                         </td>
-                    </tr>  }
+                    </tr>
+                }
             </tbody>
         </table>
     </div>

@@ -12,7 +12,7 @@
     <div class="col-md-4">
         <form asp-action="Create" id="CreateForm" onmousedown="clearErrors()">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="CompanyId"/>
+            <input type="hidden" asp-for="CompanyId" />
             <div class="form-group">
                 <label asp-for="VIN" class="control-label"></label>
                 <input asp-for="VIN" class="form-control uppercase" />
@@ -45,5 +45,7 @@
 </div>
 
 @section Scripts {
-    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

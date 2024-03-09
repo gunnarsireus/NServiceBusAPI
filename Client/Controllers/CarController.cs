@@ -8,7 +8,6 @@ using Shared.Models;
 using Shared.Requests;
 using Shared.Responses;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -48,38 +47,36 @@ namespace Client.Controllers
         [HttpGet("/car/index")]
         public async Task<IActionResult> Index(Guid? id)
         {
-          if (!_signInManager.IsSignedIn(User))
-            return RedirectToAction("Index", "Home");
+            if (!_signInManager.IsSignedIn(User))
+                return RedirectToAction("Index", "Home");
 
-          var getCarsResponse = await Utils.Utils.GetCarsResponseAsync(_messageSession);
-          var getCompaniesResponse = await Utils.Utils.GetCompaniesResponseAsync(_messageSession);
+            var getCarsResponse = await Utils.Utils.GetCarsResponseAsync(_messageSession);
+            var getCompaniesResponse = await Utils.Utils.GetCompaniesResponseAsync(_messageSession);
 
-          id ??= getCompaniesResponse.Companies.FirstOrDefault()?.Id;
+            id ??= getCompaniesResponse.Companies.FirstOrDefault()?.Id;
 
-          var companyId = id ?? Guid.NewGuid();
-          var selectedCompany = getCompaniesResponse.Companies.FirstOrDefault(c => c.Id == companyId);
-          getCarsResponse.Cars = getCarsResponse.Cars.Where(c => c.CompanyId == companyId).ToList();
+            var companyId = id ?? Guid.NewGuid();
+            var selectedCompany = getCompaniesResponse.Companies.FirstOrDefault(c => c.Id == companyId);
+            getCarsResponse.Cars = getCarsResponse.Cars.Where(c => c.CompanyId == companyId).ToList();
 
-          var selectList = getCompaniesResponse.Companies.Select(c => new SelectListItem
-          {
-            Text = c.Name,
-            Value = c.Id.ToString(),
-            Selected = c.Id == companyId
-          }).ToList();
+            var selectList = getCompaniesResponse.Companies.Select(c => new SelectListItem
+            {
+                Text = c.Name,
+                Value = c.Id.ToString(),
+                Selected = c.Id == companyId
+            }).ToList();
 
-          var carListViewModel = new CarListViewModel(companyId)
-          {
-            CompanySelectList = selectList,
-            Cars = getCarsResponse.Cars
-          };
+            var carListViewModel = new CarListViewModel(companyId)
+            {
+                CompanySelectList = selectList,
+                Cars = getCarsResponse.Cars
+            };
 
-          ViewBag.CompanyId = companyId;
-          ViewBag.CompanyName = selectedCompany?.Name;
+            ViewBag.CompanyId = companyId;
+            ViewBag.CompanyName = selectedCompany?.Name;
 
-          return View(carListViewModel);
+            return View(carListViewModel);
         }
-
-
 
         [HttpGet("/car/details")]
         public async Task<IActionResult> Details(Guid id)
