@@ -14,7 +14,7 @@ function clearErrors() {
 };
 
 function timerJob() {
-    const tenSeconds = 10000;
+    const fiveSeconds = 5000;
     const oneSecond = 1000;
     $.ajax({
         url: "http://localhost:63567/car/getallcars",
@@ -73,7 +73,7 @@ function timerJob() {
             }
         }
     });
-    setTimeout(timerJob, tenSeconds);
+    setTimeout(timerJob, fiveSeconds);
 }
 
 function doFiltering() {
