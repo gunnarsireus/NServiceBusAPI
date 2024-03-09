@@ -46,7 +46,7 @@ namespace Client.Controllers
         }
 
         [HttpGet("/car/index")]
-        public async Task<IActionResult> Index(Guid id)
+        public async Task<IActionResult> Index(string id)
         {
             if (!_signInManager.IsSignedIn(User)) return RedirectToAction("Index", "Home");
             var getCarsResponse = await Utils.Utils.GetCarsResponseAsync(_messageSession);
@@ -54,7 +54,7 @@ namespace Client.Controllers
             var getCompaniesResponse = await Utils.Utils.GetCompaniesResponseAsync(_messageSession);
 
             if (getCompaniesResponse.Companies.Any() && id == null)
-                id = getCompaniesResponse.Companies[0].Id;
+                id = getCompaniesResponse.Companies[0].Id.ToString();
 
             getCarsResponse.Cars[0].CompanyId = getCompaniesResponse.Companies[0].Id;
 
@@ -71,13 +71,13 @@ namespace Client.Controllers
             {
                 Text = company.Name,
                 Value = company.Id.ToString(),
-                Selected = company.Id == id
+                Selected = company.Id.ToString() == id
             }));
 
             var companyId = Guid.NewGuid();
-            if (id != Guid.Empty)
+            if (id != null)
             {
-                companyId = id;
+                companyId = new Guid(id);
                 getCarsResponse.Cars = getCarsResponse.Cars.Where(o => o.CompanyId == companyId).ToList();
             }
 
@@ -102,9 +102,9 @@ namespace Client.Controllers
         }
 
         [HttpGet("/car/create")]
-        public async Task<IActionResult> Create(Guid id)
+        public async Task<IActionResult> Create(string id)
         {
-            var companyId = id;
+            var companyId = new Guid(id);
             var car = new Car(companyId);
             var getCompanyResponse = await Utils.Utils.GetCompanyResponseAsync(companyId, _messageSession);
             ViewBag.CompanyName = getCompanyResponse.Company.Name;
