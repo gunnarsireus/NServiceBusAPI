@@ -23,7 +23,6 @@ namespace Server
     {
       CultureInfo.CurrentUICulture = new CultureInfo("en-US");
       var builder = new ConfigurationBuilder()
-        .SetBasePath(Directory.GetCurrentDirectory())
         .AddJsonFile("appsettings.json");
 
       var configuration = builder.Build();
@@ -79,7 +78,6 @@ namespace Server
              registration.AddTransient<UpdateCarResponseHandler>();
              registration.AddTransient<UpdateCompanyResponseHandler>();
            });
-
 
            return endpointConfiguration;
          })

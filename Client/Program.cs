@@ -27,8 +27,8 @@ namespace Client
 
       var builder = WebApplication.CreateBuilder(args);
 
-      builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
-          .AddJsonFile("appsettings.json");
+      builder.Configuration
+        .AddJsonFile("appsettings.json");
 
       builder.Logging.AddConsole();
 
