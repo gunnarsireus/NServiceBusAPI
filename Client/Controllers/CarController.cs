@@ -46,50 +46,39 @@ namespace Client.Controllers
         }
 
         [HttpGet("/car/index")]
-        public async Task<IActionResult> Index(string id)
+        public async Task<IActionResult> Index(Guid? id)
         {
-            if (!_signInManager.IsSignedIn(User)) return RedirectToAction("Index", "Home");
-            var getCarsResponse = await Utils.Utils.GetCarsResponseAsync(_messageSession);
+          if (!_signInManager.IsSignedIn(User))
+            return RedirectToAction("Index", "Home");
 
-            var getCompaniesResponse = await Utils.Utils.GetCompaniesResponseAsync(_messageSession);
+          var getCarsResponse = await Utils.Utils.GetCarsResponseAsync(_messageSession);
+          var getCompaniesResponse = await Utils.Utils.GetCompaniesResponseAsync(_messageSession);
 
-            if (getCompaniesResponse.Companies.Any() && id == null)
-                id = getCompaniesResponse.Companies[0].Id.ToString();
+          id ??= getCompaniesResponse.Companies.FirstOrDefault()?.Id;
 
-            getCarsResponse.Cars[0].CompanyId = getCompaniesResponse.Companies[0].Id;
+          var companyId = id ?? Guid.NewGuid();
+          var selectedCompany = getCompaniesResponse.Companies.FirstOrDefault(c => c.Id == companyId);
+          getCarsResponse.Cars = getCarsResponse.Cars.Where(c => c.CompanyId == companyId).ToList();
 
-            var selectList = new List<SelectListItem>
-            {
-                new SelectListItem
-                {
-                    Text = "Choose company",
-                    Value = ""
-                }
-            };
+          var selectList = getCompaniesResponse.Companies.Select(c => new SelectListItem
+          {
+            Text = c.Name,
+            Value = c.Id.ToString(),
+            Selected = c.Id == companyId
+          }).ToList();
 
-            selectList.AddRange(getCompaniesResponse.Companies.Select(company => new SelectListItem
-            {
-                Text = company.Name,
-                Value = company.Id.ToString(),
-                Selected = company.Id.ToString() == id
-            }));
+          var carListViewModel = new CarListViewModel(companyId)
+          {
+            CompanySelectList = selectList,
+            Cars = getCarsResponse.Cars
+          };
 
-            var companyId = Guid.NewGuid();
-            if (id != null)
-            {
-                companyId = new Guid(id);
-                getCarsResponse.Cars = getCarsResponse.Cars.Where(o => o.CompanyId == companyId).ToList();
-            }
+          ViewBag.CompanyId = companyId;
+          ViewBag.CompanyName = selectedCompany?.Name;
 
-            var carListViewModel = new CarListViewModel(companyId)
-            {
-                CompanySelectList = selectList,
-                Cars = getCarsResponse.Cars
-            };
-
-            ViewBag.CompanyId = id;
-            return View(carListViewModel);
+          return View(carListViewModel);
         }
+
 
 
         [HttpGet("/car/details")]
