@@ -77,18 +77,9 @@ namespace Server.Data
       await _asyncLock.WaitAsync();
       try
       {
-        // Wait until the database is not locked
-        while (IsDatabaseLocked())
-        {
-          // Wait for a short duration before checking again
-          await Task.Delay(100); // You can adjust the delay as needed
-        }
-
-        // Proceed with the update operation
         var original = await GetCarAsync(car.Id) ?? throw new Exception($"Car with id '{car.Id}' not found in database");
         _context.Entry(original).CurrentValues.SetValues(car);
 
-        // Save the changes to the database
         return await _context.SaveChangesAsync();
       }
       catch (DbUpdateConcurrencyException)
@@ -101,26 +92,5 @@ namespace Server.Data
         _asyncLock.Release();
       }
     }
-
-    private bool IsDatabaseLocked()
-    {
-      using (var connection = _context.Database.GetDbConnection())
-      {
-        connection.Open();
-        using (var command = connection.CreateCommand())
-        {
-          if (command == null)
-          {
-            // Handle the case where the command object is null
-            return false;
-          }
-
-          command.CommandText = "PRAGMA lock_status";
-          var result = command.ExecuteScalar();
-          return result?.ToString() == "1"; // Check for null result as well
-        }
-      }
-    }
-
   }
 }

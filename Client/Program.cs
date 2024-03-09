@@ -20,75 +20,80 @@ using System.Threading.Tasks;
 namespace Client
 {
   public class Program
+  {
+    public static async Task Main(string[] args)
     {
-        public static async Task Main(string[] args)
-        {
-            CultureInfo.CurrentUICulture = new CultureInfo("en-US");
+      CultureInfo.CurrentUICulture = new CultureInfo("en-US");
 
-            var builder = WebApplication.CreateBuilder(args);
+      var builder = WebApplication.CreateBuilder(args);
 
-            builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json");
+      builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
+          .AddJsonFile("appsettings.json");
 
-            builder.Logging.AddConsole();
+      builder.Logging.AddConsole();
 
-            builder.Host.UseNServiceBus(ctx =>
-            {
-                string endpointName = "NServiceBusCore.Client";
+      builder.Host.UseNServiceBus(ctx =>
+      {
+        string endpointName = "NServiceBusCore.Client";
 
-                var endpointConfiguration = new EndpointConfiguration(endpointName);
+        var endpointConfiguration = new EndpointConfiguration(endpointName);
 
-                endpointConfiguration.ApplyEndpointConfiguration(
-                    ctx.Configuration.GetConnectionString("NServiceBusTransport"),
-                    endpointName,
-                    EndpointMappings.MessageEndpointMappings());
+        endpointConfiguration.ApplyEndpointConfiguration(
+                  ctx.Configuration.GetConnectionString("NServiceBusTransport"),
+                  endpointName,
+                  EndpointMappings.MessageEndpointMappings());
 
-                return endpointConfiguration;
-            });
+        return endpointConfiguration;
+      });
 
-            var dbFilePath = Path.Combine(Path.Combine(AppContext.BaseDirectory, "App_Data"), "AspNet.db");
 
-            builder.Services
-                .AddDbContext<ApplicationDbContext>(options => options.UseSqlite($"Data Source={dbFilePath}"));
+      builder.Services.AddDbContext<ApplicationDbContext>(options =>
+          options.UseSqlServer(builder.Configuration.GetConnectionString("ASPNETDbConnection")));
 
-            builder.Services.AddTransient<ApplicationDbContext>();
-            builder.Services.AddTransient<IdentityDbContext<ApplicationUser>>();
 
-            builder.Services
-                .AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+      builder.Services.AddTransient<ApplicationDbContext>();
+      builder.Services.AddTransient<IdentityDbContext<ApplicationUser>>();
 
-            builder.Services.AddTransient<IEmailSender, EmailSender>();
+      builder.Services
+          .AddIdentity<ApplicationUser, IdentityRole>()
+          .AddEntityFrameworkStores<ApplicationDbContext>()
+          .AddDefaultTokenProviders();
 
-            builder.Services.AddControllersWithViews();
-            builder.Services.AddAuthentication();
-            builder.Services.AddAuthorization();
+      builder.Services.AddTransient<IEmailSender, EmailSender>();
 
-            var app = builder.Build();
+      builder.Services.AddControllersWithViews();
+      builder.Services.AddAuthentication();
+      builder.Services.AddAuthorization();
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
+      var app = builder.Build();
+      using (var scope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
+      {
+        scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.EnsureCreated();
+      }
 
-            app.UseStaticFiles();
 
-            app.UseRouting();
+      if (app.Environment.IsDevelopment())
+      {
+        app.UseDeveloperExceptionPage();
+      }
+      else
+      {
+        app.UseExceptionHandler("/Home/Error");
+      }
 
-            app.UseAuthentication();
+      app.UseStaticFiles();
 
-            app.UseAuthorization();
+      app.UseRouting();
 
-            app.MapControllerRoute(
-              name: "default",
-              pattern: "{controller=Home}/{action=Index}/{id?}");
+      app.UseAuthentication();
 
-            await app.RunAsync().ConfigureAwait(false);
-        }
+      app.UseAuthorization();
+
+      app.MapControllerRoute(
+        name: "default",
+        pattern: "{controller=Home}/{action=Index}/{id?}");
+
+      await app.RunAsync().ConfigureAwait(false);
     }
+  }
 }

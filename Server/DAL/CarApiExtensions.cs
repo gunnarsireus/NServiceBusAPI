@@ -13,6 +13,7 @@ namespace Server.DAL
 	{
 		public static void EnsureSeedData(this CarApiContext context)
 		{
+			context.Database.EnsureCreated();
 			if (!context.Cars.Any() || !context.Companies.Any())
 			{
 				var companyId = Guid.NewGuid();
