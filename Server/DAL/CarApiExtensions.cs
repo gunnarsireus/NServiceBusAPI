@@ -73,18 +73,5 @@ namespace Server.DAL
 			}
 			context.SaveChanges();
 		}
-
-    static public void InitSqLiteDb()
-    {
-      DbContextOptionsBuilder<CarApiContext> _optionsBuilder = new DbContextOptionsBuilder<CarApiContext>();
-      var dbFilePath = Path.Combine(Path.Combine(AppContext.BaseDirectory, "App_Data"), "Car.db");
-      _optionsBuilder.UseSqlite($"Data Source={dbFilePath}");
-      
-			using (var context = new CarApiContext(_optionsBuilder.Options))
-      {
-        context.Database.EnsureCreated();
-        context.EnsureSeedData();
-      }
-    }
   }
 }
