@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 namespace CarClient.Controllers
 {
     using NServiceBus;
+    using Shared.Requests;
+    using Shared.Responses;
 
     [Route("/company")]
     public class CompanyController : Controller
@@ -25,22 +27,23 @@ namespace CarClient.Controllers
 
 
         [HttpGet("/company")]
-
         public async Task<IActionResult> Index()
         {
             if (!_signInManager.IsSignedIn(User)) return RedirectToAction("Index", "Home");
-            var getCompaniesResponse = await Client.Utils.Utils.GetCompaniesResponseAsync(_messageSession);
+            var getCompaniesResponse = await _messageSession.Request<GetCompaniesResponse>(new GetCompaniesRequest());
             var companies = getCompaniesResponse.Companies;
+
+            var getCarsResponse = await _messageSession.Request<GetCarsResponse>(new GetCarsRequest());
+            var allCars = getCarsResponse.Cars;
 
             foreach (var company in companies)
             {
-                var getCarsResponse = await Client.Utils.Utils.GetCarsResponseAsync(_messageSession);
-                var cars = getCarsResponse.Cars;
-                cars = cars.Where(c => c.CompanyId == company.Id).ToList();
+
+                var cars = allCars.Where(c => c.CompanyId == company.Id).ToList();
                 company.Cars = cars;
             }
 
-            var companyViewModel = new CompanyViewModel { Companies = companies };
+            var companyViewModel = new CompanyViewModel { Companies = companies }; ;
 
             return View(companyViewModel);
         }
@@ -49,7 +52,7 @@ namespace CarClient.Controllers
         [HttpGet("/company/details")]
         public async Task<IActionResult> Details(Guid id)
         {
-            var getCompanyResponse = await Client.Utils.Utils.GetCompanyResponseAsync(id, _messageSession);
+            var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(id));
             var company = getCompanyResponse.Company;
 
             return View(company);
@@ -70,7 +73,7 @@ namespace CarClient.Controllers
         {
             if (!ModelState.IsValid) return View(company);
             company.Id = Guid.NewGuid();
-            var createCompanyResponse = await Client.Utils.Utils.CreateCompanyResponseAsync(company, _messageSession);
+            var createCompanyResponse = await _messageSession.Request<CreateCompanyResponse>(new CreateCompanyRequest(company));
 
             return RedirectToAction(nameof(Index));
         }
@@ -78,7 +81,7 @@ namespace CarClient.Controllers
         [HttpGet("/company/edit")]
         public async Task<IActionResult> Edit(Guid id)
         {
-            var getCompanyResponse = await Client.Utils.Utils.GetCompanyResponseAsync(id, _messageSession);
+            var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(id));
             var company = getCompanyResponse.Company;
 
             return View(company);
@@ -94,12 +97,12 @@ namespace CarClient.Controllers
         {
             if (!ModelState.IsValid) return View(company);
 
-            var getCompanyResponse = await Client.Utils.Utils.GetCompanyResponseAsync(id, _messageSession);
+            var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(id));
             var oldCompany = getCompanyResponse.Company;
 
             oldCompany.Name = company.Name;
             oldCompany.Address = company.Address;
-            var updateCompanyResponse = await Client.Utils.Utils.UpdateCompanyResponseAsync(company, _messageSession);
+            var updateCompanyResponse = await _messageSession.Request<UpdateCompanyResponse>(new UpdateCompanyRequest(oldCompany));
 
             return RedirectToAction(nameof(Index));
         }
@@ -107,7 +110,7 @@ namespace CarClient.Controllers
         [HttpGet("/company/delete")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var getCompanyResponse = await Client.Utils.Utils.GetCompanyResponseAsync(id, _messageSession);
+            var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(id));
             var company = getCompanyResponse.Company;
 
             return View(company);
@@ -118,7 +121,7 @@ namespace CarClient.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            var deleteCompanyResponse = await Client.Utils.Utils.DeleteCompanyResponseAsync(id, _messageSession);
+            await _messageSession.Request<DeleteCompanyResponse>(new DeleteCompanyRequest(id));
 
             return RedirectToAction(nameof(Index));
         }
