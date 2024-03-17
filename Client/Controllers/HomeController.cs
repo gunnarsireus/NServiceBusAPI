@@ -17,42 +17,37 @@ namespace Client.Controllers
 
         public HomeController(IMessageSession messageSession)
         {
-            _messageSession = messageSession;
+            _messageSession = messageSession ?? throw new ArgumentNullException(nameof(messageSession));
         }
 
         public async Task<IActionResult> Index()
         {
-            List<Company> companies;
             try
             {
-                var responseTask = await Utils.Utils.GetCompaniesResponseAsync(_messageSession);
-                companies = responseTask.Companies;
+                var companiesResponse = await Utils.Utils.GetCompaniesResponseAsync(_messageSession);
+                var companies = companiesResponse.Companies;
+
+                var carsResponse = await Utils.Utils.GetCarsResponseAsync(_messageSession);
+                var allCars = carsResponse.Cars.ToList();
+
+                // Batch update cars
+                var updateTasks = allCars.Select(car => Utils.Utils.UpdateCarResponseAsync(car, _messageSession));
+                await Task.WhenAll(updateTasks);
+
+                foreach (var company in companies)
+                {
+                    var companyCars = allCars.Where(o => o.CompanyId == company.Id).ToList();
+                    company.Cars = companyCars;
+                }
+
+                var homeViewModel = new HomeViewModel(Guid.NewGuid()) { Companies = companies };
+                return View("Index", homeViewModel);
             }
             catch (Exception e)
             {
                 TempData["CustomError"] = "Ingen kontakt med servern! CarAPI måste startas innan Client kan köras!";
-
                 return View("Index", new HomeViewModel(Guid.NewGuid()) { Companies = new List<Company>() });
             }
-
-            var getCarsResponse = await Utils.Utils.GetCarsResponseAsync(_messageSession);
-            var allCars = getCarsResponse.Cars.ToList();
-
-            foreach (var car in allCars)
-            {
-                car.Disabled = false; //Enable updates of Online/Offline
-                var updateCarResponse = Utils.Utils.UpdateCarResponseAsync(car, _messageSession);
-            }
-
-            foreach (var company in companies)
-            {
-                var companyCars = allCars.Where(o => o.CompanyId == company.Id).ToList();
-                company.Cars = companyCars;
-            }
-
-            var homeViewModel = new HomeViewModel(Guid.NewGuid()) { Companies = companies };
-
-            return View("Index", homeViewModel);
         }
 
         public IActionResult Error()
@@ -60,4 +55,5 @@ namespace Client.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
+
 }
