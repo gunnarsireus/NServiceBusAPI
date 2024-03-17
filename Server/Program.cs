@@ -28,15 +28,45 @@ namespace Server
       var configuration = builder.Build();
       var app = CreateHostBuilder(args, configuration).Build();
 
-      using (var scope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
-      {
-        scope.ServiceProvider.GetRequiredService<CarApiContext>().EnsureSeedData();
-      }
+            using (var scope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                var carapicontext = scope.ServiceProvider.GetRequiredService<CarApiContext>();
+                carapicontext.EnsureSeedData();
 
-      await app.RunAsync();
-    }
+                var database = scope.ServiceProvider.GetRequiredService<NServiceBusDbContext>().Database;
 
-    static IHostBuilder CreateHostBuilder(string[] args, IConfiguration configuration)
+                var sql = $"delete from [NServiceBusDb].[dbo].[error]";
+                await database.ExecuteSqlRawAsync(sql);
+
+                sql = $"delete from [NServiceBusDb].[dbo].[audit]";
+                await database.ExecuteSqlRawAsync(sql);
+
+                sql = $"delete from [NServiceBusDb].[dbo].[NServiceBusCore.Client.Delayed]";
+                await database.ExecuteSqlRawAsync(sql);
+
+                sql = $"delete from [NServiceBusDb].[dbo].[NServiceBusCore.Server.Delayed]";
+                await database.ExecuteSqlRawAsync(sql);
+
+                sql = $"delete from [NServiceBusDb].[dbo].[NServiceBusCore.Client]";
+                await database.ExecuteSqlRawAsync(sql);
+
+                sql = $"delete from [NServiceBusDb].[dbo].[NServiceBusCore.Client.1]";
+                await database.ExecuteSqlRawAsync(sql);
+
+                sql = $"delete from [NServiceBusDb].[dbo].[NServiceBusCore.Server]";
+                await database.ExecuteSqlRawAsync(sql);
+
+                sql = $"delete from [NServiceBusDb].[dbo].[NServiceBusCore.Server.1]";
+                await database.ExecuteSqlRawAsync(sql);
+
+                sql = $"delete from [NServiceBusDb].[dbo].[SubscriptionRouting]";
+                await database.ExecuteSqlRawAsync(sql);
+            }
+
+            await app.RunAsync();
+        }
+
+        static IHostBuilder CreateHostBuilder(string[] args, IConfiguration configuration)
     {
       return Host.CreateDefaultBuilder(args)
           .ConfigureLogging(logging =>
@@ -84,7 +114,11 @@ namespace Server
          {
            services.AddDbContext<CarApiContext>(options =>
                options.UseSqlServer(configuration.GetConnectionString("CarApiConnection")));
-           services.AddTransient<ICarRepository, CarRepository>();
+
+             services.AddDbContext<NServiceBusDbContext>(options =>
+                    options.UseSqlServer(configuration.GetConnectionString("NServiceBusTransport")));
+
+             services.AddTransient<ICarRepository, CarRepository>();
            services.AddTransient<ICompanyRepository, CompanyRepository>();
          });
     }
