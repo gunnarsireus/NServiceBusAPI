@@ -98,11 +98,10 @@ namespace Client.Controllers
         }
 
         [HttpGet("/car/create")]
-        public async Task<IActionResult> Create(string id)
+        public async Task<IActionResult> Create(Guid id)
         {
-            var companyId = new Guid(id);
-            var car = new Car(companyId);
-            var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(companyId));
+            var car = new Car(id);
+            var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(id));
             ViewBag.CompanyName = getCompanyResponse.Company.Name;
             return View(car);
         }
