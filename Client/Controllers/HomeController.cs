@@ -3,6 +3,8 @@ using Client.Models.HomeViewModel;
 using Microsoft.AspNetCore.Mvc;
 using NServiceBus;
 using Shared.Models;
+using Shared.Requests;
+using Shared.Responses;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,14 +26,14 @@ namespace Client.Controllers
         {
             try
             {
-                var companiesResponse = await Utils.Utils.GetCompaniesResponseAsync(_messageSession);
+                var companiesResponse = await _messageSession.Request<GetCompaniesResponse>(new GetCompaniesRequest());
                 var companies = companiesResponse.Companies;
 
-                var carsResponse = await Utils.Utils.GetCarsResponseAsync(_messageSession);
+                var carsResponse = await _messageSession.Request<GetCarsResponse>(new GetCarsRequest());
                 var allCars = carsResponse.Cars.ToList();
 
                 // Batch update cars
-                var updateTasks = allCars.Select(car => Utils.Utils.UpdateCarResponseAsync(car, _messageSession));
+                var updateTasks = allCars.Select(car => _messageSession.Request<UpdateCarResponse>(new UpdateCarRequest(car)));
                 await Task.WhenAll(updateTasks);
 
                 foreach (var company in companies)
