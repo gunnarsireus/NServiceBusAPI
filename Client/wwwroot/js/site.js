@@ -14,15 +14,15 @@ const clearErrors = () => {
 };
 
 const timerJob = () => {
-  const fiveSeconds = 5000;
-  const oneSecond = 1000;
+  const halfSecond = 500;
+  const oneTenthSecond = 100;
   $.ajax({
     url: "http://localhost:63567/car/getallcars",
     type: "GET",
     dataType: "json",
     success: (cars) => {
       if (cars.length === 0) {
-        setTimeout(timerJob, oneSecond);
+        setTimeout(timerJob, oneTenthSecond);
         console.log("Inga bilar hittade!");
         return;
       }
@@ -73,7 +73,7 @@ const timerJob = () => {
       }
     }
   });
-  setTimeout(timerJob, fiveSeconds);
+  setTimeout(timerJob, halfSecond);
 };
 
 const doFiltering = () => {
