@@ -116,7 +116,3 @@ const doFiltering = () => {
     }
   });
 };
-
-const showModals = () => {
-  window.open("./html/Car.html", "_blank", "toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=50,width=500,height=400");
-};

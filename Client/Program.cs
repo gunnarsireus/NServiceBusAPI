@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using NServiceBus;
 using Shared.Particular;
-using SireusLicenseVerification;
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
@@ -24,14 +23,7 @@ namespace Client
     public class Program
   {
     public static async Task Main(string[] args)
-    {
-      var licenseManager = new LicenseManager();
-      if (!licenseManager.ValidateLicense("appsettings.json"))
-      {
-          Console.WriteLine("Invalid license key.");
-          Environment.Exit(0);
-      }
-       
+    {     
       CultureInfo.CurrentUICulture = new CultureInfo("en-US");
 
       var builder = WebApplication.CreateBuilder(args);
