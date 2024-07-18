@@ -40,25 +40,32 @@ namespace Server
             await host.RunAsync();
         }
 
-        static async Task ClearDatabaseTables(DatabaseFacade database)
+        public static async Task ClearDatabaseTables(DatabaseFacade database)
         {
             var tables = new[]
             {
-                "error",
-                "audit",
-                "NServiceBusCore.Client.Delayed",
-                "NServiceBusCore.Server.Delayed",
-                "NServiceBusCore.Client",
-                "NServiceBusCore.Client.1",
-                "NServiceBusCore.Server",
-                "NServiceBusCore.Server.1",
-                "SubscriptionRouting"
-            };
+            "error",
+            "audit",
+            "NServiceBus.Client.Delayed",
+            "NServiceBus.Server.Delayed",
+            "NServiceBus.Client",
+            "NServiceBus.Client.1",
+            "NServiceBus.Server",
+            "NServiceBus.Server.1",
+            "SubscriptionRouting"
+        };
 
             foreach (var table in tables)
             {
-                var sql = $"delete from [NServiceBusDb].[dbo].[{table}]";
-                await database.ExecuteSqlRawAsync(sql);
+                // Check if table exists
+                var checkTableExistsSql = $"IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{table}' AND TABLE_SCHEMA = 'dbo' AND TABLE_CATALOG = 'NServiceBusDb') SELECT 1 ELSE SELECT 0";
+                var tableExists = await database.ExecuteSqlRawAsync(checkTableExistsSql);
+
+                if (tableExists == 1)
+                {
+                    var sql = $"DELETE FROM [NServiceBusDb].[dbo].[{table}]";
+                    await database.ExecuteSqlRawAsync(sql);
+                }
             }
         }
 
@@ -71,7 +78,7 @@ namespace Server
                 })
                .UseNServiceBus(ctx =>
                {
-                   string endpointName = "NServiceBusCore.Server";
+                   string endpointName = "NServiceBus.Server";
 
                    var endpointConfiguration = new EndpointConfiguration(endpointName);
 

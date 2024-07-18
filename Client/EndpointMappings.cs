@@ -11,26 +11,26 @@ namespace Client
     {
       return routing =>
       {
-        routing.RouteToEndpoint(typeof(GetCarsRequest), "NServiceBusCore.Server");
-        routing.RouteToEndpoint(typeof(UpdateCarRequest), "NServiceBusCore.Server");
-        routing.RouteToEndpoint(typeof(GetCompaniesRequest), "NServiceBusCore.Server");
-        routing.RouteToEndpoint(typeof(GetCompanyRequest), "NServiceBusCore.Server");
-        routing.RouteToEndpoint(typeof(CreateCarRequest), "NServiceBusCore.Server");
-        routing.RouteToEndpoint(typeof(GetCarRequest), "NServiceBusCore.Server");
-        routing.RouteToEndpoint(typeof(DeleteCarRequest), "NServiceBusCore.Server");
-        routing.RouteToEndpoint(typeof(CreateCompanyRequest), "NServiceBusCore.Server");
-        routing.RouteToEndpoint(typeof(DeleteCompanyRequest), "NServiceBusCore.Server");
-        routing.RouteToEndpoint(typeof(UpdateCompanyRequest), "NServiceBusCore.Server");
-        routing.RouteToEndpoint(typeof(GetCarsResponse), "NServiceBusCore.Server");
-        routing.RouteToEndpoint(typeof(UpdateCarResponse), "NServiceBusCore.Server");
-        routing.RouteToEndpoint(typeof(GetCompaniesResponse), "NServiceBusCore.Server");
-        routing.RouteToEndpoint(typeof(GetCompanyResponse), "NServiceBusCore.Server");
-        routing.RouteToEndpoint(typeof(CreateCarResponse), "NServiceBusCore.Server");
-        routing.RouteToEndpoint(typeof(GetCarResponse), "NServiceBusCore.Server");
-        routing.RouteToEndpoint(typeof(DeleteCarResponse), "NServiceBusCore.Server");
-        routing.RouteToEndpoint(typeof(CreateCompanyResponse), "NServiceBusCore.Server");
-        routing.RouteToEndpoint(typeof(DeleteCompanyResponse), "NServiceBusCore.Server");
-        routing.RouteToEndpoint(typeof(UpdateCompanyResponse), "NServiceBusCore.Server");
+        routing.RouteToEndpoint(typeof(GetCarsRequest), "NServiceBus.Server");
+        routing.RouteToEndpoint(typeof(UpdateCarRequest), "NServiceBus.Server");
+        routing.RouteToEndpoint(typeof(GetCompaniesRequest), "NServiceBus.Server");
+        routing.RouteToEndpoint(typeof(GetCompanyRequest), "NServiceBus.Server");
+        routing.RouteToEndpoint(typeof(CreateCarRequest), "NServiceBus.Server");
+        routing.RouteToEndpoint(typeof(GetCarRequest), "NServiceBus.Server");
+        routing.RouteToEndpoint(typeof(DeleteCarRequest), "NServiceBus.Server");
+        routing.RouteToEndpoint(typeof(CreateCompanyRequest), "NServiceBus.Server");
+        routing.RouteToEndpoint(typeof(DeleteCompanyRequest), "NServiceBus.Server");
+        routing.RouteToEndpoint(typeof(UpdateCompanyRequest), "NServiceBus.Server");
+        routing.RouteToEndpoint(typeof(GetCarsResponse), "NServiceBus.Server");
+        routing.RouteToEndpoint(typeof(UpdateCarResponse), "NServiceBus.Server");
+        routing.RouteToEndpoint(typeof(GetCompaniesResponse), "NServiceBus.Server");
+        routing.RouteToEndpoint(typeof(GetCompanyResponse), "NServiceBus.Server");
+        routing.RouteToEndpoint(typeof(CreateCarResponse), "NServiceBus.Server");
+        routing.RouteToEndpoint(typeof(GetCarResponse), "NServiceBus.Server");
+        routing.RouteToEndpoint(typeof(DeleteCarResponse), "NServiceBus.Server");
+        routing.RouteToEndpoint(typeof(CreateCompanyResponse), "NServiceBus.Server");
+        routing.RouteToEndpoint(typeof(DeleteCompanyResponse), "NServiceBus.Server");
+        routing.RouteToEndpoint(typeof(UpdateCompanyResponse), "NServiceBus.Server");
       };
     }
   }

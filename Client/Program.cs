@@ -35,7 +35,7 @@ namespace Client
 
       builder.Host.UseNServiceBus(ctx =>
       {
-        string endpointName = "NServiceBusCore.Client";
+        string endpointName = "NServiceBus.Client";
 
         var endpointConfiguration = new EndpointConfiguration(endpointName);
 
