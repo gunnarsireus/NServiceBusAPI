@@ -13,7 +13,7 @@ namespace CarClient.Controllers
     using Shared.Requests;
     using Shared.Responses;
 
-    [Route("/company")]
+    [Route("company")]
     public class CompanyController : Controller
     {
         readonly SignInManager<ApplicationUser> _signInManager;
@@ -26,7 +26,7 @@ namespace CarClient.Controllers
         }
 
 
-        [HttpGet("/company")]
+        [HttpGet("company")]
         public async Task<IActionResult> Index()
         {
             if (!_signInManager.IsSignedIn(User)) return RedirectToAction("Index", "Home");
@@ -49,7 +49,7 @@ namespace CarClient.Controllers
         }
 
 
-        [HttpGet("/company/details")]
+        [HttpGet("details")]
         public async Task<IActionResult> Details(Guid id)
         {
             var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(id));
@@ -58,7 +58,7 @@ namespace CarClient.Controllers
             return View(company);
         }
 
-        [HttpGet("/company/create")]
+        [HttpGet("create")]
         public IActionResult Create()
         {
             return View();
@@ -67,7 +67,7 @@ namespace CarClient.Controllers
         // POST: Company/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost("/company/create")]
+        [HttpPost("create")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,Address,CreationTime")] Company company)
         {
@@ -78,7 +78,7 @@ namespace CarClient.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpGet("/company/edit")]
+        [HttpGet("edit")]
         public async Task<IActionResult> Edit(Guid id)
         {
             var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(id));
@@ -90,7 +90,7 @@ namespace CarClient.Controllers
         // POST: Company/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost("/company/edit")]
+        [HttpPost("edit")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, [Bind("Id,CreationTime, Name, Address")] Company company)
@@ -107,7 +107,7 @@ namespace CarClient.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpGet("/company/delete")]
+        [HttpGet("delete")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(id));
@@ -117,7 +117,7 @@ namespace CarClient.Controllers
         }
 
         // POST: Company/Delete/5
-        [HttpPost("/company/delete")]
+        [HttpPost("delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {

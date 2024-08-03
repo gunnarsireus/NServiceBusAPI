@@ -9,17 +9,15 @@ using Shared.Requests;
 using Shared.Responses;
 using System;
 using System.Linq;
-using System.Runtime.ConstrainedExecution;
 using System.Threading.Tasks;
 
 namespace Client.Controllers
 {
-
-    [Route("/car")]
+    [Route("car")]
     public class CarController : Controller
     {
-        readonly SignInManager<ApplicationUser> _signInManager;
-        readonly IMessageSession _messageSession;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IMessageSession _messageSession;
 
         public CarController(SignInManager<ApplicationUser> signInManager, IMessageSession messageSession)
         {
@@ -27,7 +25,7 @@ namespace Client.Controllers
             _messageSession = messageSession;
         }
 
-        [HttpGet("/car/index")]
+        [HttpGet("index")]
         public async Task<IActionResult> Index(Guid? id)
         {
             if (!_signInManager.IsSignedIn(User))
@@ -35,8 +33,8 @@ namespace Client.Controllers
 
             try
             {
-                var getCarsResponse = await _messageSession.Request<GetCarsResponse>(new GetCarsRequest());
-                var getCompaniesResponse = await _messageSession.Request<GetCompaniesResponse>(new GetCompaniesRequest());
+                var getCarsResponse = await _messageSession.Request<GetCarsResponse>(new GetCarsRequest()).ConfigureAwait(false);
+                var getCompaniesResponse = await _messageSession.Request<GetCompaniesResponse>(new GetCompaniesRequest()).ConfigureAwait(false);
 
                 var selectedCompany = id == null
                     ? getCompaniesResponse.Companies.FirstOrDefault()
@@ -66,129 +64,170 @@ namespace Client.Controllers
             catch (Exception ex)
             {
                 // Handle exception (log, display error message, etc.)
+                // Example: _logger.LogError(ex, "Error fetching car data");
                 return RedirectToAction("Index", "Home");
             }
         }
 
-        [HttpGet("/car/details")]
+        [HttpGet("details")]
         public async Task<IActionResult> Details(Guid id)
-        {
-            var getCarResponse = await _messageSession.Request<GetCarResponse>(new GetCarRequest(id));
-            var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(getCarResponse.Car.CompanyId));
-            ViewBag.CompanyName = getCompanyResponse.Company.Name;
-            return View(getCarResponse.Car);
-        }
-
-        [HttpGet("/car/create")]
-        public async Task<IActionResult> Create(Guid id)
-        {
-            var car = new Car(id);
-            var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(id));
-            ViewBag.CompanyName = getCompanyResponse.Company.Name;
-            return View(car);
-        }
-
-        // POST: Car/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost("/car/create")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CompanyId,VIN,RegNr,Online")] Car car)
         {
             try
             {
-                if (car == null)
-                {
-                    // Log or handle null car object
-                    return RedirectToAction("Index", "Home");
-                }
-
-                if (!ModelState.IsValid)
-                {
-                    return View(car);
-                }
-
-                car.Id = Guid.NewGuid();
-
-                await _messageSession.Request<CreateCarResponse>(new CreateCarRequest(car));
-
-                return RedirectToAction("Index", new { id = car?.CompanyId });
+                var getCarResponse = await _messageSession.Request<GetCarResponse>(new GetCarRequest(id)).ConfigureAwait(false);
+                var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(getCarResponse.Car.CompanyId)).ConfigureAwait(false);
+                ViewBag.CompanyName = getCompanyResponse.Company.Name;
+                return View(getCarResponse.Car);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // Handle exception (log, display error message, etc.)
                 return RedirectToAction("Index", "Home");
             }
         }
 
-
-        [HttpGet("/car/edit")]
-        public async Task<IActionResult> Edit(Guid id)
+        [HttpGet("create")]
+        public async Task<IActionResult> Create(Guid id)
         {
-            var getCarResponse = await _messageSession.Request<GetCarResponse>(new GetCarRequest(id));
-            getCarResponse.Car.Disabled = true; //Prevent updates of Online/Offline while editing
-            var upadteCarResponse = await _messageSession.Request<UpdateCarResponse>(new UpdateCarRequest(getCarResponse.Car));
-            var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(upadteCarResponse.Car.CompanyId));
-
-            ViewBag.CompanyName = getCompanyResponse.Company.Name;
-
-            return View(getCarResponse.Car);
+            try
+            {
+                var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(id)).ConfigureAwait(false);
+                ViewBag.CompanyName = getCompanyResponse.Company.Name;
+                return View(new Car(id));
+            }
+            catch (Exception ex)
+            {
+                // Handle exception (log, display error message, etc.)
+                return RedirectToAction("Index", "Home");
+            }
         }
 
-        // POST: Car/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost("/car/edit")]
+        [HttpPost("create")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("CompanyId,VIN,RegNr,Online")] Car car)
+        {
+            if (car == null) return RedirectToAction("Index", "Home");
+
+            if (!ModelState.IsValid) return View(car);
+
+            try
+            {
+                await _messageSession.Request<CreateCarResponse>(new CreateCarRequest(car)).ConfigureAwait(false);
+                return RedirectToAction("Index", new { id = car.CompanyId });
+            }
+            catch (Exception ex)
+            {
+                // Handle exception (log, display error message, etc.)
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        [HttpGet("edit")]
+        public async Task<IActionResult> Edit(Guid id)
+        {
+            try
+            {
+                var getCarResponse = await _messageSession.Request<GetCarResponse>(new GetCarRequest(id)).ConfigureAwait(false);
+                getCarResponse.Car.Disabled = true; //Prevent updates of Online/Offline while editing
+                await _messageSession.Request<UpdateCarResponse>(new UpdateCarRequest(getCarResponse.Car)).ConfigureAwait(false);
+                var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(getCarResponse.Car.CompanyId)).ConfigureAwait(false);
+
+                ViewBag.CompanyName = getCompanyResponse.Company.Name;
+                return View(getCarResponse.Car);
+            }
+            catch (Exception ex)
+            {
+                // Handle exception (log, display error message, etc.)
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        [HttpPost("edit")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, [Bind("Id, Online")] Car car)
         {
             if (!ModelState.IsValid) return View(car);
 
-            var oldCarResponse = await _messageSession.Request<GetCarResponse>(new GetCarRequest(id));
-            var oldCar = oldCarResponse.Car;
-            oldCar.Online = car.Online;
-            oldCar.Disabled = false; //Enable updates of Online/Offline when editing done
+            try
+            {
+                var oldCarResponse = await _messageSession.Request<GetCarResponse>(new GetCarRequest(id)).ConfigureAwait(false);
+                var oldCar = oldCarResponse.Car;
+                oldCar.Online = car.Online;
+                oldCar.Disabled = false; //Enable updates of Online/Offline when editing done
 
-            await _messageSession.Request<UpdateCarResponse>(new UpdateCarRequest(oldCar));
-
-            return RedirectToAction("Index", new { id = oldCar.CompanyId });
+                await _messageSession.Request<UpdateCarResponse>(new UpdateCarRequest(oldCar)).ConfigureAwait(false);
+                return RedirectToAction("Index", new { id = oldCar.CompanyId });
+            }
+            catch (Exception ex)
+            {
+                // Handle exception (log, display error message, etc.)
+                return RedirectToAction("Index", "Home");
+            }
         }
 
-        [HttpGet("/car/delete")]
+        [HttpGet("delete")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var getCarResponse = await _messageSession.Request<GetCarResponse>(new GetCarRequest(id));
-
-            return View(getCarResponse.Car);
+            try
+            {
+                var getCarResponse = await _messageSession.Request<GetCarResponse>(new GetCarRequest(id)).ConfigureAwait(false);
+                return View(getCarResponse.Car);
+            }
+            catch (Exception ex)
+            {
+                // Handle exception (log, display error message, etc.)
+                return RedirectToAction("Index", "Home");
+            }
         }
 
-        // POST: Car/Delete/5
-        [HttpPost("/car/delete")]
+        [HttpPost("delete")]
         [ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            var getCarResponse = await _messageSession.Request<GetCarResponse>(new GetCarRequest(id));
-            await _messageSession.Request<DeleteCarResponse>(new DeleteCarRequest(id));
-
-            return RedirectToAction("Index", new { id = getCarResponse.Car.CompanyId });
+            try
+            {
+                var getCarResponse = await _messageSession.Request<GetCarResponse>(new GetCarRequest(id)).ConfigureAwait(false);
+                await _messageSession.Request<DeleteCarResponse>(new DeleteCarRequest(id)).ConfigureAwait(false);
+                return RedirectToAction("Index", new { id = getCarResponse.Car.CompanyId });
+            }
+            catch (Exception ex)
+            {
+                // Handle exception (log, display error message, etc.)
+                return RedirectToAction("Index", "Home");
+            }
         }
 
-        [HttpGet("/car/regnravailableasync")]
+        [HttpGet("regnravailableasync")]
         public async Task<JsonResult> RegNrAvailableAsync(string regNr)
         {
-            var getCarsResponse = await _messageSession.Request<GetCarsResponse>(new GetCarsRequest());
-            bool isAvailable = getCarsResponse.Cars.All(c => c.RegNr != regNr);
-
-            return Json(isAvailable);
+            try
+            {
+                var getCarsResponse = await _messageSession.Request<GetCarsResponse>(new GetCarsRequest()).ConfigureAwait(false);
+                bool isAvailable = getCarsResponse.Cars.All(c => c.RegNr != regNr);
+                return Json(isAvailable);
+            }
+            catch (Exception ex)
+            {
+                // Handle exception (log, display error message, etc.)
+                return Json(false);
+            }
         }
 
-        [HttpGet("/car/vinavailableasync")]
+        [HttpGet("vinavailableasync")]
         public async Task<JsonResult> VinAvailableAsync(string vin)
         {
-            var getCarsResponse = await _messageSession.Request<GetCarsResponse>(new GetCarsRequest());
-            bool isAvailable = getCarsResponse.Cars.All(c => c.VIN != vin);
-
-            return Json(isAvailable);
+            try
+            {
+                var getCarsResponse = await _messageSession.Request<GetCarsResponse>(new GetCarsRequest()).ConfigureAwait(false);
+                bool isAvailable = getCarsResponse.Cars.All(c => c.VIN != vin);
+                return Json(isAvailable);
+            }
+            catch (Exception ex)
+            {
+                // Handle exception (log, display error message, etc.)
+                return Json(false);
+            }
         }
     }
 }
