@@ -43,9 +43,11 @@ namespace Client.Controllers
 
             var getCarResponse = await _messageSession.Request<GetCarResponse>(new GetCarRequest(car.Id));
             var oldCar = getCarResponse.Car;
-            oldCar.Online = car.Online;
-
-            await _messageSession.Request<UpdateCarResponse>(new UpdateCarRequest(oldCar));
+            if (oldCar != null)
+            {
+                oldCar.Online = car.Online;
+                await _messageSession.Request<UpdateCarResponse>(new UpdateCarRequest(oldCar));
+            }
 
             return Ok(new { success = true }); // Use Ok() to return success response
         }

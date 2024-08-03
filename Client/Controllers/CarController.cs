@@ -3,6 +3,7 @@ using Client.Models.CarViewModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Logging;
 using NServiceBus;
 using Shared.Models;
 using Shared.Requests;
@@ -18,11 +19,13 @@ namespace Client.Controllers
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IMessageSession _messageSession;
+        private readonly ILogger<CarController> _logger;
 
-        public CarController(SignInManager<ApplicationUser> signInManager, IMessageSession messageSession)
+        public CarController(SignInManager<ApplicationUser> signInManager, IMessageSession messageSession, ILogger<CarController> logger)
         {
             _signInManager = signInManager;
             _messageSession = messageSession;
+            _logger = logger;
         }
 
         [HttpGet("index")]
@@ -41,7 +44,7 @@ namespace Client.Controllers
                     : getCompaniesResponse.Companies.SingleOrDefault(c => c.Id == id);
 
                 var companyId = selectedCompany?.Id ?? Guid.NewGuid();
-                getCarsResponse.Cars = getCarsResponse.Cars.Where(c => c.CompanyId == companyId).ToList();
+                var filteredCars = getCarsResponse.Cars.Where(c => c.CompanyId == companyId).ToList();
 
                 var selectList = getCompaniesResponse.Companies.Select(c => new SelectListItem
                 {
@@ -53,7 +56,7 @@ namespace Client.Controllers
                 var viewModel = new CarListViewModel(companyId)
                 {
                     CompanySelectList = selectList,
-                    Cars = getCarsResponse.Cars
+                    Cars = filteredCars
                 };
 
                 ViewBag.CompanyId = companyId;
@@ -63,51 +66,49 @@ namespace Client.Controllers
             }
             catch (Exception ex)
             {
-                // Handle exception (log, display error message, etc.)
-                // Example: _logger.LogError(ex, "Error fetching car data");
-                return RedirectToAction("Index", "Home");
+                _logger.LogError(ex, "Error fetching car data");
+                return StatusCode(500, "Internal server error");
             }
         }
 
-        [HttpGet("details")]
+        [HttpGet("details/{id}")]
         public async Task<IActionResult> Details(Guid id)
         {
             try
             {
-                var getCarResponse = await _messageSession.Request<GetCarResponse>(new GetCarRequest(id)).ConfigureAwait(false);
-                var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(getCarResponse.Car.CompanyId)).ConfigureAwait(false);
-                ViewBag.CompanyName = getCompanyResponse.Company.Name;
-                return View(getCarResponse.Car);
+                var car = await GetCarByIdAsync(id).ConfigureAwait(false);
+                var company = await GetCompanyByIdAsync(car.CompanyId).ConfigureAwait(false);
+
+                ViewBag.CompanyName = company.Name;
+                return View(car);
             }
             catch (Exception ex)
             {
-                // Handle exception (log, display error message, etc.)
-                return RedirectToAction("Index", "Home");
+                _logger.LogError(ex, "Error fetching car details");
+                return StatusCode(500, "Internal server error");
             }
         }
 
-        [HttpGet("create")]
-        public async Task<IActionResult> Create(Guid id)
+        [HttpGet("create/{companyId}")]
+        public async Task<IActionResult> Create(Guid companyId)
         {
             try
             {
-                var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(id)).ConfigureAwait(false);
-                ViewBag.CompanyName = getCompanyResponse.Company.Name;
-                return View(new Car(id));
+                var company = await GetCompanyByIdAsync(companyId).ConfigureAwait(false);
+                ViewBag.CompanyName = company.Name;
+                return View(new Car(companyId));
             }
             catch (Exception ex)
             {
-                // Handle exception (log, display error message, etc.)
-                return RedirectToAction("Index", "Home");
+                _logger.LogError(ex, "Error loading create car view");
+                return StatusCode(500, "Internal server error");
             }
         }
 
-        [HttpPost("create")]
+        [HttpPost("create/{companyId}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("CompanyId,VIN,RegNr,Online")] Car car)
         {
-            if (car == null) return RedirectToAction("Index", "Home");
-
             if (!ModelState.IsValid) return View(car);
 
             try
@@ -117,84 +118,82 @@ namespace Client.Controllers
             }
             catch (Exception ex)
             {
-                // Handle exception (log, display error message, etc.)
-                return RedirectToAction("Index", "Home");
+                _logger.LogError(ex, "Error creating car");
+                return StatusCode(500, "Internal server error");
             }
         }
 
-        [HttpGet("edit")]
+        [HttpGet("edit/{id}")]
         public async Task<IActionResult> Edit(Guid id)
         {
             try
             {
-                var getCarResponse = await _messageSession.Request<GetCarResponse>(new GetCarRequest(id)).ConfigureAwait(false);
-                getCarResponse.Car.Disabled = true; //Prevent updates of Online/Offline while editing
-                await _messageSession.Request<UpdateCarResponse>(new UpdateCarRequest(getCarResponse.Car)).ConfigureAwait(false);
-                var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(getCarResponse.Car.CompanyId)).ConfigureAwait(false);
+                var car = await GetCarByIdAsync(id).ConfigureAwait(false);
+                car.Disabled = true; // Prevent updates of Online/Offline while editing
 
-                ViewBag.CompanyName = getCompanyResponse.Company.Name;
-                return View(getCarResponse.Car);
+                var company = await GetCompanyByIdAsync(car.CompanyId).ConfigureAwait(false);
+                ViewBag.CompanyName = company.Name;
+
+                return View(car);
             }
             catch (Exception ex)
             {
-                // Handle exception (log, display error message, etc.)
-                return RedirectToAction("Index", "Home");
+                _logger.LogError(ex, "Error loading edit car view");
+                return StatusCode(500, "Internal server error");
             }
         }
 
-        [HttpPost("edit")]
+        [HttpPost("edit/{id}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id, Online")] Car car)
+        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Online")] Car car)
         {
             if (!ModelState.IsValid) return View(car);
 
             try
             {
-                var oldCarResponse = await _messageSession.Request<GetCarResponse>(new GetCarRequest(id)).ConfigureAwait(false);
-                var oldCar = oldCarResponse.Car;
+                var oldCar = await GetCarByIdAsync(id).ConfigureAwait(false);
                 oldCar.Online = car.Online;
-                oldCar.Disabled = false; //Enable updates of Online/Offline when editing done
+                oldCar.Disabled = false; // Enable updates of Online/Offline when editing is done
 
                 await _messageSession.Request<UpdateCarResponse>(new UpdateCarRequest(oldCar)).ConfigureAwait(false);
                 return RedirectToAction("Index", new { id = oldCar.CompanyId });
             }
             catch (Exception ex)
             {
-                // Handle exception (log, display error message, etc.)
-                return RedirectToAction("Index", "Home");
+                _logger.LogError(ex, "Error updating car");
+                return StatusCode(500, "Internal server error");
             }
         }
 
-        [HttpGet("delete")]
+        [HttpGet("delete/{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             try
             {
-                var getCarResponse = await _messageSession.Request<GetCarResponse>(new GetCarRequest(id)).ConfigureAwait(false);
-                return View(getCarResponse.Car);
+                var car = await GetCarByIdAsync(id).ConfigureAwait(false);
+                return View(car);
             }
             catch (Exception ex)
             {
-                // Handle exception (log, display error message, etc.)
-                return RedirectToAction("Index", "Home");
+                _logger.LogError(ex, "Error loading delete car view");
+                return StatusCode(500, "Internal server error");
             }
         }
 
-        [HttpPost("delete")]
-        [ActionName("Delete")]
+        [HttpPost("delete/{id}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
             try
             {
-                var getCarResponse = await _messageSession.Request<GetCarResponse>(new GetCarRequest(id)).ConfigureAwait(false);
+                var car = await GetCarByIdAsync(id).ConfigureAwait(false);
                 await _messageSession.Request<DeleteCarResponse>(new DeleteCarRequest(id)).ConfigureAwait(false);
-                return RedirectToAction("Index", new { id = getCarResponse.Car.CompanyId });
+                return RedirectToAction("Index", new { id = car.CompanyId });
             }
             catch (Exception ex)
             {
-                // Handle exception (log, display error message, etc.)
-                return RedirectToAction("Index", "Home");
+                _logger.LogError(ex, "Error deleting car");
+                return StatusCode(500, "Internal server error");
             }
         }
 
@@ -209,7 +208,7 @@ namespace Client.Controllers
             }
             catch (Exception ex)
             {
-                // Handle exception (log, display error message, etc.)
+                _logger.LogError(ex, "Error checking RegNr availability");
                 return Json(false);
             }
         }
@@ -225,9 +224,21 @@ namespace Client.Controllers
             }
             catch (Exception ex)
             {
-                // Handle exception (log, display error message, etc.)
+                _logger.LogError(ex, "Error checking VIN availability");
                 return Json(false);
             }
+        }
+
+        private async Task<Car> GetCarByIdAsync(Guid id)
+        {
+            var response = await _messageSession.Request<GetCarResponse>(new GetCarRequest(id)).ConfigureAwait(false);
+            return response.Car;
+        }
+
+        private async Task<Company> GetCompanyByIdAsync(Guid id)
+        {
+            var response = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(id)).ConfigureAwait(false);
+            return response.Company;
         }
     }
 }

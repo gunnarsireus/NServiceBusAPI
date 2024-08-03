@@ -10,7 +10,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create" id="CreateForm">
+        <form asp-action="Create" id="CreateForm" asp-route-id="@Model.CompanyId">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="CompanyId" />
             <div class="form-group">

@@ -26,7 +26,7 @@ namespace CarClient.Controllers
         }
 
 
-        [HttpGet("company")]
+        [HttpGet("index")]
         public async Task<IActionResult> Index()
         {
             if (!_signInManager.IsSignedIn(User)) return RedirectToAction("Index", "Home");
@@ -48,8 +48,7 @@ namespace CarClient.Controllers
             return View(companyViewModel);
         }
 
-
-        [HttpGet("details")]
+        [HttpGet("details/{id}")]
         public async Task<IActionResult> Details(Guid id)
         {
             var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(id));
@@ -78,7 +77,7 @@ namespace CarClient.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpGet("edit")]
+        [HttpGet("edit/{id}")]
         public async Task<IActionResult> Edit(Guid id)
         {
             var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(id));
@@ -90,8 +89,7 @@ namespace CarClient.Controllers
         // POST: Company/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost("edit")]
-        [HttpPost]
+        [HttpPost("edit/{id}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, [Bind("Id,CreationTime, Name, Address")] Company company)
         {
@@ -107,7 +105,7 @@ namespace CarClient.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpGet("delete")]
+        [HttpGet("delete/{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var getCompanyResponse = await _messageSession.Request<GetCompanyResponse>(new GetCompanyRequest(id));
@@ -117,7 +115,7 @@ namespace CarClient.Controllers
         }
 
         // POST: Company/Delete/5
-        [HttpPost("delete")]
+        [HttpPost("delete/{id}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
